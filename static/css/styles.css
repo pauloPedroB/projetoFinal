@@ -1,0 +1,17 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+
+.mapBox {
+    position: relative;
+    width: 600px;
+    height: 600px;
+    background: #fff;
+}
+
+.mapBox iframe{
+    width: 100%;
+    height: 100%;
+}
