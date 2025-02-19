@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <!-- Inclua o Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <main class="main">
+        
+        <div class="container">
+            <h1>Verificação de Email</h1>
+            <p>Um Email de Validação foi enviado para sua caixa de Mensagens, Clique no Link para Validar seu Email</p>
+            <form action="">
+                <input type="submit" value="Enviar Novamente">
+                <a href="">Sair</a>
+            </form>
+        </div>
+
+        <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    
+    </main>
+</body>
+</html>

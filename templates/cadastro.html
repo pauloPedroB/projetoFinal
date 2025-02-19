@@ -3,34 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Cadastro</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <!-- Inclua o Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <main class="main">
-        
         <div class="container">
-            <h1>Tela de Login</h1>
-            <form action="/entrar" method="post">
+            <h1>Tela de Cadastro</h1>
+            <form action="/cadastrar" method="post">
                 <h3>{{erro}}</h3>
-                <label for="login">Usuário ou Email</label>
-                <input type="text" id="login" name="login">
+                <label for="email">Email</label>
+                <input type="text" id="email" name="email">
 
                 <label for="password">Senha</label>
                 <div class="password-container">
                     <input type="password" id="password" name="password">
                     <i class="fas fa-eye" id="togglePassword1"></i>
                 </div>
-                <input type="submit" value="Entrar">
-            </form>
-            <a href="/cadastro">Cadastre-se</a>
-            <a href="/recuperar">Esqueceu a senha</a>
-        </div>
 
+                <label for="confirm_password">Confirmação de senha</label>
+                <div class="password-container">
+                    <input type="password" id="confirm_password" name="confirm_password">
+                    <i class="fas fa-eye" id="togglePassword2"></i>
+                </div>
+        
+                <input type="submit" value="Cadastrar">
+            </form>
+        </div>
         <script src="{{ url_for('static', filename='js/app.js') }}"></script>
-    
     </main>
 </body>
 </html>

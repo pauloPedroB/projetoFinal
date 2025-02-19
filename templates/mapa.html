@@ -3,34 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mapa da Cidade</title>
+    <title>Mapa por CEP</title>
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <style>
-        #map {
-            width: 100%;
-            height: 500px;
-            margin-top: 20px;
-        }
-    </style>
 </head>
 <body>
-    <h2>Mapa da Localização</h2>
-    <div id="map"></div>
+    <h2>Digite o CEP para ver o mapa da cidade</h2>
+    <p>{{erro}}</p>
+    <form action="buscar_cep">
+        <input type="text" id="cep" placeholder="Digite o CEP" maxlength="8" name="cep">
+        <input type="submit" value="Buscar">
+    </form>
 
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script>
-        var lat = parseFloat("{{ latitude }}");
-        var lon = parseFloat("{{ longitude }}");
-    
-        var map = L.map('map').setView([lat, lon], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-    
-        L.marker([lat, lon]).addTo(map).bindPopup("Localização encontrada!").openPopup();
-    </script>
-    
+    <p>{{dados}}</p>
+    <p>{{latLong}}</p>
+
+    {% if dados %}
+    <div class="mapBox">
+        <!-- Ajuste da URL do Google Maps -->
+        <iframe 
+            src="https://www.google.com/maps?q={{latLong['latitude']}},{{latLong['longitude']}}&output=embed" 
+            style="border:0;" 
+            allowfullscreen="" 
+            loading="lazy" 
+            referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
+    </div>
+    {% endif %}
+
+    {% if enderecos_ordenados %}
+        <h3>Endereços Ordenados</h3>
+        {% for endereco in enderecos_ordenados %}
+            <p>Endereço: {{ endereco.rua }} - Distância: {{ endereco.distancia }} km</p>
+        {% endfor %}
+    {% endif %}
+
+
+    <script src="app.js"></script>
+
 </body>
 </html>
-
- 

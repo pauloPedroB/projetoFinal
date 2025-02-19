@@ -1,9 +1,8 @@
-from flask import Flask, render_template, request, session
+from flask import Flask, render_template, request, session, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
-import requests
-from geopy.geocoders import Nominatim, OpenCage
-from geopy.exc import GeocoderTimedOut
+from werkzeug.security import generate_password_hash, check_password_hash
 from geopy.distance import geodesic
+import validacoes
 
 app = Flask(__name__)
 
@@ -12,77 +11,133 @@ app.config['SECRET_KEY'] = 'Chave()1243123'
 
 db = SQLAlchemy(app)
 
+class Usuarios(db.Model):
+    __tablename__ = 'usuarios'
+
+    id_usuario = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    email_usuario = db.Column(db.String(120), unique=True, nullable=False)
+    pass_usuario = db.Column(db.String(300), nullable=False)
+    verificado = db.Column(db.DateTime, nullable=False)
+    #tokens = db.relationship('Tokens', backref='usuario', cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f'<Usuario {self.nome_usuario}>'
+
 class Endereco(db.Model):
     __tablename__ = 'enderecos'
-
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     rua = db.Column(db.String(50), nullable=False)
     nmr = db.Column(db.Integer, nullable=False)
     latitude = db.Column(db.String(50), nullable=False)
     longitude = db.Column(db.String(50), nullable=False)
 
-
     def __repr__(self):
         return f'<Endereco {self.rua}>'
-
 
 def logout():
     session.clear()
 
-def consultar_cep(cep):
-    url = f"https://viacep.com.br/ws/{cep}/json/"
-    response = requests.get(url)
-    
-    if response.status_code == 200:
-        dados = response.json()
-        if "erro" not in dados:
-            return True, dados
-        else:
-            return False, "Cep Não encontrado"
-    else:
-        return False,"Erro na requisição."
 
 
+def verificarCadastro():
+    if 'user_id' not in session:
+        return redirect('/inicio')
+    if not 'user_verificado' in session or session['user_verificado'] is None:
+        return redirect('/VerifiqueseuEmail')
 
-
-def obter_lat_long(endereco):
-    # Primeiro, tente usar o Nominatim
-    geolocator_nominatim = Nominatim(user_agent="myGeocoder")
-    
-    try:
-        localizacao = geolocator_nominatim.geocode(endereco, timeout=10)
-        if localizacao:
-            return {"latitude": localizacao.latitude, "longitude": localizacao.longitude}
-    except GeocoderTimedOut:
-        print("Erro de timeout com Nominatim.")
-    
-    # Se o Nominatim não funcionar, tente o OpenCage
-    chave_api_opencage = '25fc62d0f13d40448e3f206d06bc89bd'
-    geolocator_opencage = OpenCage(api_key=chave_api_opencage)
-    
-    try:
-        localizacao = geolocator_opencage.geocode(endereco)
-        if localizacao:
-            return {"latitude": localizacao.latitude, "longitude": localizacao.longitude}
-    except Exception as e:
-        print(f"Erro ao tentar o OpenCage: {e}")
-    
-    partes_endereco = endereco.split(',')
-    
-    bairro = partes_endereco[1] if len(partes_endereco) > 1 else None
-    cidade = partes_endereco[2] if len(partes_endereco) > 2 else partes_endereco[1]
-
-    if bairro and cidade:
-        endereco_bairro_cidade = f"{bairro.strip()}, {cidade.strip()}"
-        try:
-            localizacao_bairro_cidade = geolocator_opencage.geocode(endereco_bairro_cidade)
-            if localizacao_bairro_cidade:
-                return {"latitude": localizacao_bairro_cidade.latitude, "longitude": localizacao_bairro_cidade.longitude}
-        except Exception as e:
-            print(f"Erro ao tentar buscar o bairro e cidade com OpenCage: {e}")
-    
     return None
+    
+@app.route('/')
+def index():
+    return redirect('/inicio')
 
+
+@app.route('/inicio')
+def inicio():
+    
+    erro = request.args.get('erro')
+    if erro == None:
+        erro = ""
+
+    if 'user_id' in session:
+        return redirect('/menu')
+    
+    return render_template('index.html',erro=erro)
+    
+
+@app.route('/cadastro')
+def cadastro():
+    logout()
+
+    return render_template('cadastro.html')
+
+@app.route('/cadastrar', methods=['POST'])
+def cadastrar():
+    try:
+        logout()
+        email = request.form['email']
+        senha = request.form['password']
+        confirmacao_senha = request.form['confirm_password']
+
+        validacao,mensagem = validacoes.validar_cadastro(email,senha,confirmacao_senha)
+        
+
+        if(validacao == False):
+            return render_template("cadastro.html", erro=mensagem)
+        elif(Usuarios.query.filter_by(email_usuario=email).first()):
+            return render_template("cadastro.html", erro="Email já cadastrado!")
+        
+        hashed_password = generate_password_hash(senha)
+        
+        novo_usuario = Usuarios(email_usuario=email, pass_usuario=hashed_password)
+        db.session.add(novo_usuario)
+        db.session.commit()
+
+        session['user_id'] = novo_usuario.id_usuario
+        session['user_email'] = novo_usuario.email_usuario
+
+        return redirect(url_for('menu'))
+
+    except:
+        return render_template("cadastro.html", erro="Erro ao tentar se cadastrar")
+
+@app.route('/entrar', methods=['POST'])
+def entrar():
+   try:
+        logout()
+        nome = request.form['login']
+        senha = request.form['password']
+
+        usuario = Usuarios.query.filter(Usuarios.email_usuario == nome).first()
+        if(usuario):
+            if(check_password_hash(usuario.pass_usuario,senha)):
+                session['user_id'] = usuario.id_usuario
+                session['user_email'] = usuario.email_usuario
+                session['user_verificado'] = usuario.verificado
+
+                return redirect(url_for('menu'))
+
+            return redirect(url_for('inicio', erro='Senha incorreta'))
+        return redirect(url_for('inicio', erro='Usuário não encontrado'))
+        
+   except:
+        return redirect(url_for('inicio', erro='Erro ao tentar acessar o sistema'))
+   
+
+@app.route('/menu')
+def menu():
+    verificar = verificarCadastro()
+    if verificar:  
+        return verificar
+    mensagem = request.args.get('mensagem')
+    if mensagem == None:
+        mensagem = ""
+ 
+    return render_template('menu.html', mensagem = "Validado")
+
+
+  
+    
     
 @app.route('/buscar_cep', methods=['GET'])
 def buscar_cep():
@@ -91,11 +146,11 @@ def buscar_cep():
     if not cep or len(cep) != 8 or not cep.isdigit():
         return render_template('index.html', erro="Cep Inválido", dados=None)
     
-    sucesso, endereco = consultar_cep(cep)
+    sucesso, endereco = validacoes.consultar_cep(cep)
     if sucesso:
         endereco_formatado = f'{endereco["logradouro"]}, {endereco["bairro"]}, {endereco["localidade"]}, {endereco["uf"]}, Brasil'
         
-        latLong = obter_lat_long(endereco_formatado)
+        latLong = validacoes.obter_lat_long(endereco_formatado)
         
         if latLong:
             novo_endereco = Endereco(rua = endereco["logradouro"],nmr = 2, latitude = latLong["latitude"], longitude = latLong["longitude"])
@@ -120,10 +175,15 @@ def buscar_cep():
             return render_template('index.html', erro="Coordenadas não encontradas.", dados=endereco)
     else:
         return render_template('index.html', erro="Cep não encontrado", dados=None)
+    
+@app.route('/VerifiqueseuEmail')
+def VerificarEmail():
+    return render_template('email.html')
 
-@app.route('/')
-def inicio():
-    return render_template('index.html')
+@app.route('/sair')
+def sair():
+    logout()
+    return redirect(url_for('inicio'))
 
 if __name__ == '__main__':
     app.run(debug=True)

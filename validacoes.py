@@ -5,18 +5,23 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from datetime import datetime, timedelta
 import pytz
+import requests
+from geopy.geocoders import Nominatim, OpenCage
+from geopy.exc import GeocoderTimedOut
+from geopy.distance import geodesic
+
 
 def validar_email(email):
-
     regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
 
     if len(email) > 254:
         return False
     
-    if re.match(regex, email) == False:
+    if not re.match(regex, email):  # Corrigido aqui
         return False
    
     return True
+
 
 def validar_senha(senha,confirmacao_senha):
     if (len(senha) >= 8 and
@@ -41,13 +46,10 @@ def validar_usuario(nome_usuario):
         return True
     return False
 
-def validar_cadastro(email,user,password,password_confirm):
+def validar_cadastro(email,password,password_confirm):
 
     if validar_email(email) == False:
         return False,"Email inválido"
-    
-    if validar_usuario(user) == False:
-        return False,"Nome de usuário deve ter entre 3 e 20 caracteres; Conter apenas letras, números e/ou sublinhados (_); Não começar ou terminar com um sublinhado; Não conter espaços."
     
     senha, mensagem = validar_senha(password,password_confirm)
     if senha == False:
@@ -146,3 +148,59 @@ def verificar_expiracao_token(token):
         return True 
     else:
         return False
+    
+
+def consultar_cep(cep):
+    url = f"https://viacep.com.br/ws/{cep}/json/"
+    response = requests.get(url)
+    
+    if response.status_code == 200:
+        dados = response.json()
+        if "erro" not in dados:
+            return True, dados
+        else:
+            return False, "Cep Não encontrado"
+    else:
+        return False,"Erro na requisição."
+
+
+
+
+def obter_lat_long(endereco):
+    # Primeiro, tente usar o Nominatim
+    geolocator_nominatim = Nominatim(user_agent="myGeocoder")
+    
+    try:
+        localizacao = geolocator_nominatim.geocode(endereco, timeout=10)
+        if localizacao:
+            return {"latitude": localizacao.latitude, "longitude": localizacao.longitude}
+    except GeocoderTimedOut:
+        print("Erro de timeout com Nominatim.")
+    
+    # Se o Nominatim não funcionar, tente o OpenCage
+    chave_api_opencage = '25fc62d0f13d40448e3f206d06bc89bd'
+    geolocator_opencage = OpenCage(api_key=chave_api_opencage)
+    
+    try:
+        localizacao = geolocator_opencage.geocode(endereco)
+        if localizacao:
+            return {"latitude": localizacao.latitude, "longitude": localizacao.longitude}
+    except Exception as e:
+        print(f"Erro ao tentar o OpenCage: {e}")
+    
+    partes_endereco = endereco.split(',')
+    
+    bairro = partes_endereco[1] if len(partes_endereco) > 1 else None
+    cidade = partes_endereco[2] if len(partes_endereco) > 2 else partes_endereco[1]
+
+    if bairro and cidade:
+        endereco_bairro_cidade = f"{bairro.strip()}, {cidade.strip()}"
+        try:
+            localizacao_bairro_cidade = geolocator_opencage.geocode(endereco_bairro_cidade)
+            if localizacao_bairro_cidade:
+                return {"latitude": localizacao_bairro_cidade.latitude, "longitude": localizacao_bairro_cidade.longitude}
+        except Exception as e:
+            print(f"Erro ao tentar buscar o bairro e cidade com OpenCage: {e}")
+    
+    return None
+
