@@ -5,23 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <!-- Inclua o Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <main class="main">
-        
         <div class="container">
             <h1>Verificação de Email</h1>
+            <h3>{{ mensagem }}</h3>
             <p>Um Email de Validação foi enviado para sua caixa de Mensagens, Clique no Link para Validar seu Email</p>
-            <form action="">
-                <input type="submit" value="Enviar Novamente">
-                <a href="">Sair</a>
+            <form action="/enviar">
+                <input type="submit" value="Aguarde 60s..." id="botaoEnviar" disabled>
+                <a href="/sair">Sair</a>
             </form>
         </div>
 
-        <script src="{{ url_for('static', filename='js/app.js') }}"></script>
-    
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                let botao = document.getElementById("botaoEnviar");
+                let tempo = 60; // Tempo inicial em segundos
+
+                function atualizarBotao() {
+                    if (tempo > 0) {
+                        botao.value = `Aguarde ${tempo}s...`;
+                        tempo--;
+                        setTimeout(atualizarBotao, 1000);
+                    } else {
+                        botao.value = "Enviar Novamente";
+                        botao.disabled = false;
+                    }
+                }
+
+                atualizarBotao();
+            });
+        </script>
     </main>
 </body>
 </html>

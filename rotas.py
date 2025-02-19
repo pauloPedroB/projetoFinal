@@ -6,7 +6,7 @@ import validacoes
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://aluno:toor@localhost:3306/projetoAutomoveis'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:Victor%4012@localhost:3306/projetoAutomoveis'
 app.config['SECRET_KEY'] = 'Chave()1243123'
 
 db = SQLAlchemy(app)
@@ -18,7 +18,7 @@ class Usuarios(db.Model):
     email_usuario = db.Column(db.String(120), unique=True, nullable=False)
     pass_usuario = db.Column(db.String(300), nullable=False)
     verificado = db.Column(db.DateTime, nullable=False)
-    #tokens = db.relationship('Tokens', backref='usuario', cascade="all, delete-orphan")
+    tokens = db.relationship('Tokens', backref='usuario', cascade="all, delete-orphan")
 
     def __repr__(self):
         return f'<Usuario {self.nome_usuario}>'
@@ -33,10 +33,30 @@ class Endereco(db.Model):
 
     def __repr__(self):
         return f'<Endereco {self.rua}>'
+    
+class Tokens(db.Model):
+    __tablename__ = 'tokens'
+
+    id_token = db.Column(db.String(300), primary_key=True, nullable=False) 
+    dt_cr = db.Column(db.DateTime, nullable=False) 
+    usado = db.Column(db.Boolean, default=False, nullable=False)
+
+    id_user = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), nullable=False)
+
+    def __repr__(self):
+        return f'<Token {self.id_token}>'
 
 def logout():
     session.clear()
 
+
+def enviarEmail():
+    id_token = validacoes.gerar_token()
+    horario = validacoes.horario_br()
+    novo_token = Tokens(id_token=id_token, id_user=session['user_id'], dt_cr=horario,usado = False)
+    db.session.add(novo_token)
+    db.session.commit()
+    enviar = validacoes.enviar_email(session['user_email'],novo_token.id_token)
 
 
 def verificarCadastro():
@@ -96,10 +116,53 @@ def cadastrar():
         session['user_id'] = novo_usuario.id_usuario
         session['user_email'] = novo_usuario.email_usuario
 
+        enviarEmail()
+        
         return redirect(url_for('menu'))
 
     except:
         return render_template("cadastro.html", erro="Erro ao tentar se cadastrar")
+    
+
+@app.route('/enviar')
+def enviar():
+    try:
+        verificar = verificarCadastro()
+        enviarEmail()
+        return redirect(url_for('menu'))
+    
+    except:
+        return redirect(url_for('inicio'))
+
+
+
+    
+@app.route('/validar/<token>')
+def validar(token):
+    try:
+        token = Tokens.query.filter(Tokens.id_token == token, Tokens.usado == False).first()
+
+        if not token or validacoes.verificar_expiracao_token(token)==True:
+            return redirect(url_for('VerificarEmail', mensagem="Token inválido ou já utilizado."))
+        usuario = Usuarios.query.filter(Usuarios.id_usuario == token.id_user).first()
+
+        if not usuario:
+            return redirect(url_for('VerificarEmail', mensagem="Usuário não encontrado"))
+        
+        if usuario.id_usuario != session.get('user_id'):
+            return redirect(url_for('VerificarEmail', mensagem="Usuario vinculado ao token não é o mesmo usuário que está acessando o Sistema"))
+
+
+        
+        usuario.verificado = validacoes.horario_br()
+        token.usado = True
+        db.session.commit()
+
+        session['user_verificado'] = usuario.verificado
+
+        return redirect(url_for('menu'))
+    except:
+        return redirect(url_for('inicio', erro='Algo deu errado ao procurar o seu token, repita o processo de recuperação'))
 
 @app.route('/entrar', methods=['POST'])
 def entrar():
@@ -147,6 +210,7 @@ def buscar_cep():
         return render_template('index.html', erro="Cep Inválido", dados=None)
     
     sucesso, endereco = validacoes.consultar_cep(cep)
+    endereco_completo = endereco
     if sucesso:
         endereco_formatado = f'{endereco["logradouro"]}, {endereco["bairro"]}, {endereco["localidade"]}, {endereco["uf"]}, Brasil'
         
@@ -178,7 +242,10 @@ def buscar_cep():
     
 @app.route('/VerifiqueseuEmail')
 def VerificarEmail():
-    return render_template('email.html')
+    mensagem = request.args.get('mensagem')
+    if mensagem == None:
+        mensagem = ""
+    return render_template('email.html',mensagem = mensagem)
 
 @app.route('/sair')
 def sair():
