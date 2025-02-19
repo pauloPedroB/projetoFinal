@@ -18,6 +18,7 @@
                 <label for="login">Usuário ou Email</label>
                 <input type="text" id="login" name="login">
 
+<<<<<<< HEAD
                 <label for="password">Senha</label>
                 <div class="password-container">
                     <input type="password" id="password" name="password">
@@ -28,6 +29,33 @@
             <a href="/cadastro">Cadastre-se</a>
             <a href="/recuperar">Esqueceu a senha</a>
         </div>
+=======
+    <p>{{dados}}</p>
+    <p>{{latLong}}</p>
+
+    {% if dados %}
+    <div class="mapBox">
+        <!-- Ajuste da URL do Google Maps -->
+        <iframe 
+            src="https://www.google.com/maps?q={{dados['cep'].replace('-','')}},120&output=embed" 
+            style="border:0;" 
+            allowfullscreen="" 
+            loading="lazy" 
+            referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
+    </div>
+    {% endif %}
+
+    {% if enderecos_ordenados %}
+        <h3>Endereços Ordenados</h3>
+        {% for endereco in enderecos_ordenados %}
+            <p>Endereço: {{ endereco.rua }} - Distância: {{ endereco.distancia }} km</p>
+        {% endfor %}
+    {% endif %}
+
+
+    <script src="app.js"></script>
+>>>>>>> bfcad0c352efd33bbaed9f8fb46b714c34a6d8a5
 
         <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     

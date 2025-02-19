@@ -6,7 +6,7 @@ import validacoes
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:Victor%4012@localhost:3306/projetoAutomoveis'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://aluno:toor@localhost:3306/projetoAutomoveis'
 app.config['SECRET_KEY'] = 'Chave()1243123'
 
 db = SQLAlchemy(app)
@@ -146,7 +146,12 @@ def buscar_cep():
     if not cep or len(cep) != 8 or not cep.isdigit():
         return render_template('index.html', erro="Cep Inválido", dados=None)
     
+<<<<<<< HEAD
     sucesso, endereco = validacoes.consultar_cep(cep)
+=======
+    sucesso, endereco = consultar_cep(cep)
+    endereco_completo = endereco
+>>>>>>> bfcad0c352efd33bbaed9f8fb46b714c34a6d8a5
     if sucesso:
         endereco_formatado = f'{endereco["logradouro"]}, {endereco["bairro"]}, {endereco["localidade"]}, {endereco["uf"]}, Brasil'
         
@@ -170,7 +175,7 @@ def buscar_cep():
             enderecos_ordenados.sort(key=lambda x: x["distancia"])
 
 
-            return render_template('index.html', erro="", dados=endereco, latLong=latLong,enderecos_ordenados = enderecos_ordenados)
+            return render_template('index.html', erro="", dados=endereco_completo, latLong=latLong,enderecos_ordenados = enderecos_ordenados)
         else:
             return render_template('index.html', erro="Coordenadas não encontradas.", dados=endereco)
     else:
