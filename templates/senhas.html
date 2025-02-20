@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+
+</head>
+<body>
+    <main class="main">
+        <div class="container">
+
+            <h2>Alterar Senha</h2>
+            <h3>{{mensagem}}</h3>
+            <form action="/alterarsenha" method="post">
+
+                <input type="text" value='{{token}}' name="token" id="token" readonly style="display: none;">
+                <label for="password">Nova Senha</label>
+                <div class="password-container">
+                    <input type="password" id="password" name="password">
+                    <i class="fas fa-eye" id="togglePassword1"></i>
+                </div>
+
+                <label for="confirm_password">Confirmação de senha</label>
+                <div class="password-container">
+                    <input type="password" id="confirm_password" name="confirm_password">
+                    <i class="fas fa-eye" id="togglePassword2"></i>
+                </div>
+                <input type="submit" value="Entrar">
+
+            </form>
+
+        </div>
+        <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    </main>
+
+</body>
+</html>

@@ -3,61 +3,19 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from geopy.distance import geodesic
 import validacoes
+from classes import db, Usuarios, Endereco, Tokens
 
 app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:Victor%4012@localhost:3306/projetoAutomoveis'
 app.config['SECRET_KEY'] = 'Chave()1243123'
 
-db = SQLAlchemy(app)
+db.init_app(app)
 
-class Usuarios(db.Model):
-    __tablename__ = 'usuarios'
 
-    id_usuario = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    email_usuario = db.Column(db.String(120), unique=True, nullable=False)
-    pass_usuario = db.Column(db.String(300), nullable=False)
-    verificado = db.Column(db.DateTime, nullable=False)
-    tokens = db.relationship('Tokens', backref='usuario', cascade="all, delete-orphan")
-
-    def __repr__(self):
-        return f'<Usuario {self.nome_usuario}>'
-
-class Endereco(db.Model):
-    __tablename__ = 'enderecos'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    rua = db.Column(db.String(50), nullable=False)
-    nmr = db.Column(db.Integer, nullable=False)
-    latitude = db.Column(db.String(50), nullable=False)
-    longitude = db.Column(db.String(50), nullable=False)
-
-    def __repr__(self):
-        return f'<Endereco {self.rua}>'
-    
-class Tokens(db.Model):
-    __tablename__ = 'tokens'
-
-    id_token = db.Column(db.String(300), primary_key=True, nullable=False) 
-    dt_cr = db.Column(db.DateTime, nullable=False) 
-    usado = db.Column(db.Boolean, default=False, nullable=False)
-
-    id_user = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), nullable=False)
-
-    def __repr__(self):
-        return f'<Token {self.id_token}>'
 
 def logout():
     session.clear()
-
-
-def enviarEmail():
-    id_token = validacoes.gerar_token()
-    horario = validacoes.horario_br()
-    novo_token = Tokens(id_token=id_token, id_user=session['user_id'], dt_cr=horario,usado = False)
-    db.session.add(novo_token)
-    db.session.commit()
-    enviar = validacoes.enviar_email(session['user_email'],novo_token.id_token)
-
 
 def verificarCadastro():
     if 'user_id' not in session:
@@ -116,7 +74,7 @@ def cadastrar():
         session['user_id'] = novo_usuario.id_usuario
         session['user_email'] = novo_usuario.email_usuario
 
-        enviarEmail()
+        validacoes.enviarEmail(1,session['user_id'],session['user_email'])
         
         return redirect(url_for('menu'))
 
@@ -128,7 +86,7 @@ def cadastrar():
 def enviar():
     try:
         verificar = verificarCadastro()
-        enviarEmail()
+        validacoes.enviarEmail(1,session['user_id'],session['user_email'])
         return redirect(url_for('menu'))
     
     except:
@@ -186,6 +144,67 @@ def entrar():
    except:
         return redirect(url_for('inicio', erro='Erro ao tentar acessar o sistema'))
    
+@app.route('/recuperar')
+def recuperar():
+    logout()
+
+    return render_template('recuperar.html')
+
+
+@app.route('/recuperarsenha', methods=['POST'])
+def recuperarsenha():
+        logout()
+        email = request.form['email']
+        usuario = Usuarios.query.filter((Usuarios.email_usuario == email)).first()
+        if(usuario):
+            validacoes.enviarEmail(2, usuario.id_usuario, usuario.email_usuario)
+            return redirect(url_for('inicio', erro='Email de recuperação enviada para sua caixa de mensagens'))
+        else:
+            return redirect(url_for('inicio', erro='Usuário não encontado'))
+        
+@app.route('/recuperar/<token>')
+def senhas(token):
+    try:
+        logout()
+
+        return render_template('senhas.html',token = token)
+    except:
+        return redirect(url_for('inicio', erro='Algo deu errado ao procurar o seu token, repita o processo de recuperação'))
+    
+
+@app.route('/alterarsenha', methods=['POST'])
+def alterarsenha():
+    try:
+        logout()
+
+        senha = request.form['password']
+        confirmacao_senha = request.form['confirm_password']
+        id_token = request.form['token']
+
+        verificar_senha, mensagem = validacoes.validar_senha(senha, confirmacao_senha)
+
+        if not verificar_senha:
+            return render_template('senhas.html', mensagem=mensagem,token = id_token)
+
+        token = Tokens.query.filter(Tokens.id_token == id_token, Tokens.usado == False).first()
+
+        if not token or validacoes.verificar_expiracao_token(token)==True:
+            return render_template('senhas.html', mensagem="Token inválido ou já utilizado.",token = id_token)
+
+        usuario = Usuarios.query.filter(Usuarios.id_usuario == token.id_user).first()
+
+        if not usuario:
+            return render_template('senhas.html', mensagem="Usuário não encontrado.",token = id_token)
+
+        hashed_password = generate_password_hash(senha)
+        usuario.pass_usuario = hashed_password
+
+        token.usado = True
+        db.session.commit()
+        
+        return redirect(url_for('inicio', erro="Senha alterada com sucesso."))
+    except:
+        return render_template('senhas.html', mensagem="Erro ao tentar alterar senha",token = id_token)
 
 @app.route('/menu')
 def menu():
@@ -200,8 +219,6 @@ def menu():
 
 
   
-    
-    
 @app.route('/buscar_cep', methods=['GET'])
 def buscar_cep():
     cep = request.args.get('cep')

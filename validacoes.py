@@ -10,6 +10,9 @@ from geopy.geocoders import Nominatim, OpenCage
 from geopy.exc import GeocoderTimedOut
 from geopy.distance import geodesic
 
+from classes import db, Usuarios, Endereco, Tokens
+from flask import session
+
 
 def validar_email(email):
     regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
@@ -57,7 +60,20 @@ def validar_cadastro(email,password,password_confirm):
     
     return True, "Cadastrado com sucesso!"
 
-def enviar_email(email,token):
+def enviarEmail(metodo,id,email):
+
+
+    id_token = gerar_token()
+    horario = horario_br()
+    novo_token = Tokens(id_token=id_token, id_user=id, dt_cr=horario,usado = False)
+    db.session.add(novo_token)
+    db.session.commit()
+    if metodo == 1:
+        enviar_validacao(email,novo_token.id_token)
+    elif metodo == 2:
+        enviar_email_recuperacao(email,novo_token.id_token)
+
+def enviar_validacao(email,token):
     
     corpo_email = f"""
     Olá, {email}!
@@ -127,41 +143,6 @@ def enviar_email_recuperacao(email,token):
 
         return False
 
-
-def enviar_convite(email,token):
-    
-    corpo_email = f"""
-    Olá, {email}!
-    <br></br>
-    Entre na nossa equipe, adorariamos tê-lo em nosso time
-    <br></br>
-    http://127.0.0.1:5000/convite/{token}
-    <br></br>
-    Este link é válido por 2 horas.
-    """
-
-    msg = MIMEMultipart()
-    msg['Subject'] = "Assunto"
-    msg['From'] = 'siqueirapedropaulo93@gmail.com'
-    msg['To'] = email
-    senha = 'gelmtdnmupufjiqd'  # Senha de app gerada
-
-    msg.attach(MIMEText(corpo_email, 'html', 'utf-8'))
-
-
-    try:
-       
-        s = smtplib.SMTP('smtp.gmail.com', 587)
-        s.starttls()
-        s.login(msg['From'], senha)
-        s.sendmail(msg['From'], [msg['To']], msg.as_string())
-        s.quit()
-
-        return True
-    except Exception as e:
-
-        return False
-    
 def gerar_token(comprimento=32):
     return secrets.token_hex(comprimento)
 
