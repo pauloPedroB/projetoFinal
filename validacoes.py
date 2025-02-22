@@ -66,12 +66,14 @@ def enviarEmail(metodo,id,email):
     id_token = gerar_token()
     horario = horario_br()
     novo_token = Tokens(id_token=id_token, id_user=id, dt_cr=horario,usado = False)
-    db.session.add(novo_token)
-    db.session.commit()
     if metodo == 1:
+        if 'user_verificado' in session:
+            return None
         enviar_validacao(email,novo_token.id_token)
     elif metodo == 2:
         enviar_email_recuperacao(email,novo_token.id_token)
+    db.session.add(novo_token)
+    db.session.commit()
 
 def enviar_validacao(email,token):
     
@@ -216,4 +218,85 @@ def obter_lat_long(endereco):
             print(f"Erro ao tentar buscar o bairro e cidade com OpenCage: {e}")
     
     return None
+
+def validar_cadastroLoja(cnpj,nome,razao,tell,cell,data):
+    if validar_cnpj(cnpj) == False:
+        return False, "CNPJ INVÁLIDO"
+    if validar_nome(nome)  == False:
+        return False,"Nome Fantásia Inválido"
+    if validar_nome(razao)  == False:
+        return False,"Razão Social Inválida"
+    if validar_telefone(tell)  == False:
+        return False,"Telefone Inválido"
+    if validar_data_abertura(data)  == False:
+        return False,"Data inválida"
+    if(cell != None):
+        if validar_telefone(cell)  == False:
+            return False,"Número de Telefone Inválido"
+ 
+    return True,"Sucesso"
+
+
+
+def validar_cnpj(cnpj):
+    """Valida um CNPJ verificando o formato e os dígitos verificadores."""
+    cnpj = re.sub(r'\D', '', cnpj)
+
+    if len(cnpj) != 14:
+        return False 
+
+    pesos_1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+    pesos_2 = [6] + pesos_1
+
+    def calcular_digito(cnpj_parcial, pesos):
+        soma = sum(int(a) * b for a, b in zip(cnpj_parcial, pesos))
+        resto = soma % 11
+        return '0' if resto < 2 else str(11 - resto)
+
+    digito1 = calcular_digito(cnpj[:12], pesos_1)
+    digito2 = calcular_digito(cnpj[:12] + digito1, pesos_2)
+
+    return cnpj.endswith(digito1 + digito2)
+
+def validar_telefone(telefone):
+    """Valida telefone e celular: apenas números e tamanho entre 10 e 11 dígitos"""
+    telefone_limpo = re.sub(r'\D', '', telefone)  # Remove caracteres não numéricos
+    return bool(re.fullmatch(r'\d{10,11}', telefone_limpo))
+
+
+def validar_data_abertura(data_str):
+    try:
+        # Converte a string da data para um objeto datetime
+        data_abertura = datetime.strptime(data_str, "%Y-%m-%d")
+        
+        # Obtém a data atual (sem horas, minutos e segundos)
+        data_atual = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        
+        # Verifica se a data de abertura é no futuro
+        if data_abertura > data_atual:
+            return False  # Se for no futuro, retorna False (inválido)
+        
+        # Se passar, a data é válida (ou no passado ou no presente)
+        return True 
+    
+    except ValueError:
+        return False  # Se a data não for válida no formato "%Y-%m-%d", retorna False
+
+
+
+def validar_nome(nome):
+    # Verifica se o nome tem entre 3 e 65 caracteres
+    if len(nome) < 3 or len(nome) > 65:
+        return False
+    
+    # Verifica se o nome contém apenas letras e espaços
+    if not re.match(r'^[a-zA-Záéíóúãõâêîôûàèìòùãẽĩõũ ]+$', nome):
+        return False
+    
+    # Verifica se o nome não começa nem termina com espaços
+    if nome.startswith(' ') or nome.endswith(' '):
+        return False
+    
+    return True
+
 

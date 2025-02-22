@@ -4,6 +4,7 @@ body {
 }
 
 
+
 .mapBox {
     position: relative;
     width: 600px;
@@ -16,19 +17,6 @@ body {
     height: 100%;
 }
 
-main {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    display: grid;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    grid-template-columns: repeat(4, 1fr);
-}
-.main{
-    display:flex;
-}
 .equipe{
     display: grid;
     grid-template-columns: repeat(1, 1fr);
@@ -79,10 +67,24 @@ input[type="text"], input[type="password"] {
     box-sizing: border-box;
 }
 
+
+.error-message {
+    color: red;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    display: block;
+    margin-bottom: 5px; /* Dá um espaçamento entre o erro e o campo */
+}
 .password-container {
-    position: relative;
     display: flex;
-    align-items: center; /* Alinha verticalmente o ícone com o campo de entrada */
+    align-items: center;
+    position: relative;
+}
+.password-container i {
+    position: absolute;
+    right: 10px;
+    cursor: pointer;
 }
 
 .password-container input[type="password"] {
@@ -162,25 +164,44 @@ header.cabeçalho1 a {
 .perfil img{
     width: 30px;
 }
-.opcao{
-    margin: 50px;
+main {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    height: 100vh;
+    grid-template-columns: repeat(2, 1fr); /* Altere para 2 itens */
     text-align: center;
+}
 
-    padding: 15px 20px;
+.corpo{
+    height: 50vh;
+}
+.opcao {
+    width: 200px;
+    height: 200px; 
+    margin: 100px;
+    padding: 10px;
+    text-align: center;
     border-radius: 8px;
     text-decoration: none;
     transition: background-color 0.3s ease;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     cursor: pointer;
-
+    justify-content: center; 
+    align-items: center;
 }
+
+.opcao img {
+    width: 100px; /* Ajuste o tamanho da imagem dentro do botão */
+    height: 100px; /* Ajuste o tamanho da imagem dentro do botão */
+}
+
 .opcao:hover {
     background-color: #555; /* Muda a cor de fundo ao passar o mouse */
 }
-.opcao img
-{
-    width: 100px;
-}
+
 .opcao h3{
     color: black;
 }

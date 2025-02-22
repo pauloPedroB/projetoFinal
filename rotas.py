@@ -1,9 +1,10 @@
-from flask import Flask, render_template, request, session, redirect, url_for
+from flask import Flask, render_template, request, session, redirect, url_for,jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from geopy.distance import geodesic
 import validacoes
 from classes import db, Usuarios, Endereco, Tokens
+import requests
 
 app = Flask(__name__)
 
@@ -24,6 +25,11 @@ def verificarCadastro():
         return redirect('/VerifiqueseuEmail')
 
     return None
+
+def verificarLog():
+    if 'user_id' in session:
+        return redirect('/menu')
+    return None
     
 @app.route('/')
 def index():
@@ -37,22 +43,34 @@ def inicio():
     if erro == None:
         erro = ""
 
-    if 'user_id' in session:
-        return redirect('/menu')
+    verificar = verificarLog()
+    if verificar:
+        return verificar
+
     
     return render_template('index.html',erro=erro)
     
 
 @app.route('/cadastro')
 def cadastro():
-    logout()
+    
+    verificar = verificarLog()
+    if verificar:
+        return verificar
+    
+    erro = request.args.get('erro')
+    if erro == None:
+        erro = ""
 
-    return render_template('cadastro.html')
+    return render_template('cadastro.html',erro = erro)
 
 @app.route('/cadastrar', methods=['POST'])
 def cadastrar():
     try:
-        logout()
+        
+        verificar = verificarLog()
+        if verificar:
+            return verificar
         email = request.form['email']
         senha = request.form['password']
         confirmacao_senha = request.form['confirm_password']
@@ -61,9 +79,9 @@ def cadastrar():
         
 
         if(validacao == False):
-            return render_template("cadastro.html", erro=mensagem)
+            return redirect(url_for('cadastro',erro = mensagem))
         elif(Usuarios.query.filter_by(email_usuario=email).first()):
-            return render_template("cadastro.html", erro="Email já cadastrado!")
+            return redirect(url_for('cadastro',erro = "Email já cadastrado!"))
         
         hashed_password = generate_password_hash(senha)
         
@@ -79,13 +97,13 @@ def cadastrar():
         return redirect(url_for('menu'))
 
     except:
-        return render_template("cadastro.html", erro="Erro ao tentar se cadastrar")
+        return redirect(url_for('cadastro',erro = "Erro ao tentar se cadastrar"))
+
     
 
 @app.route('/enviar')
 def enviar():
     try:
-        verificar = verificarCadastro()
         validacoes.enviarEmail(1,session['user_id'],session['user_email'])
         return redirect(url_for('menu'))
     
@@ -98,6 +116,7 @@ def enviar():
 @app.route('/validar/<token>')
 def validar(token):
     try:
+      
         token = Tokens.query.filter(Tokens.id_token == token, Tokens.usado == False).first()
 
         if not token or validacoes.verificar_expiracao_token(token)==True:
@@ -125,8 +144,10 @@ def validar(token):
 @app.route('/entrar', methods=['POST'])
 def entrar():
    try:
-        logout()
-        nome = request.form['login']
+        verificar = verificarLog()
+        if verificar:
+            return verificar
+        nome = request.form['email']
         senha = request.form['password']
 
         usuario = Usuarios.query.filter(Usuarios.email_usuario == nome).first()
@@ -146,14 +167,17 @@ def entrar():
    
 @app.route('/recuperar')
 def recuperar():
-    logout()
-
+    verificar = verificarLog()
+    if verificar:
+        return verificar
     return render_template('recuperar.html')
 
 
 @app.route('/recuperarsenha', methods=['POST'])
 def recuperarsenha():
-        logout()
+        verificar = verificarLog()
+        if verificar:
+            return verificar
         email = request.form['email']
         usuario = Usuarios.query.filter((Usuarios.email_usuario == email)).first()
         if(usuario):
@@ -217,8 +241,47 @@ def menu():
  
     return render_template('menu.html', mensagem = "Validado")
 
+@app.route('/cadastroLoja')
+def cadastroLoja():
+    
+    verificar = verificarCadastro()
+    if verificar:
+        return verificar
+    
+    erro = request.args.get('erro')
+    if erro == None:
+        erro = ""
+    return render_template('cadastroLoja.html',erro = erro)
 
-  
+
+
+
+@app.route('/consultar_cnpj', methods=['GET'])
+def consultar_cnpj():
+    cnpj = request.args.get('cnpj')
+    if cnpj:
+        url = f'https://www.receitaws.com.br/v1/cnpj/{cnpj}'
+        response = requests.get(url)
+        if response.status_code == 200:
+            return jsonify(response.json())
+        else:
+            return jsonify({'error': 'CNPJ não encontrado'}), 404
+    return jsonify({'error': 'CNPJ inválido'}), 400
+
+@app.route('/cadastrarLoja',methods=['POST'])
+def cadastrarLoja():
+    cnpj = request.form['CNPJ']
+    nomeFantasia = request.form['nomeFantasia']
+    razaoSocial = request.form['razaoSocial']
+    telefone = request.form['telefone']
+    celular = request.form['celular']
+    abertura = request.form['abertura']
+
+    cadastro,mensagem = validacoes.validar_cadastroLoja(cnpj,nomeFantasia,razaoSocial,telefone,celular,abertura)
+    if cadastro:
+        return redirect(url_for('menu'))
+    return redirect(url_for('cadastroLoja',erro = mensagem))
+
 @app.route('/buscar_cep', methods=['GET'])
 def buscar_cep():
     cep = request.args.get('cep')
@@ -259,6 +322,7 @@ def buscar_cep():
     
 @app.route('/VerifiqueseuEmail')
 def VerificarEmail():
+    
     mensagem = request.args.get('mensagem')
     if mensagem == None:
         mensagem = ""

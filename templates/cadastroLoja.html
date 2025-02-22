@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Pessoa Jurídica</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+</head>
+<body>
+    <main class="mainLoja">
+        <div class="container">
+            <h1>Tela de Cadastro de Loja</h1>
+            <form action="/cadastrarLoja" method="post">
+                <h3>{{erro}}</h3>
+                <div class="dados">
+                    <label for="CNPJ">CNPJ</label>
+                    <span class="error-message" id="CNPJerror"></span>
+                    <input type="text" id="CNPJ" name="CNPJ" placeholder="CNPJ: (APENAS NÚMEROS)">
+    
+                    <label for="nomeFantasia">Nome Fantasia</label>
+                    <span class="error-message" id="nameError"></span>
+                    <input type="text" id="nomeFantasia" name="nomeFantasia">
+    
+                    <label for="razaoSocial">Razão Social</label>
+                    <span class="error-message" id="razaoError"></span>
+                    <input type="text" id="razaoSocial" name="razaoSocial">
+    
+                    <label for="telefone">Telefone</label>
+                    <span class="error-message" id="telefoneError"></span>
+                    <input type="text" id="telefone" name="telefone">
+    
+                    <label for="celular">Celular</label>
+                    <span class="error-message" id="cellError"></span>
+                    <input type="text" id="celular" name="celular">
+    
+                    <label for="celular">Abertura</label>
+                    <span class="error-message" id="dataError"></span>
+                    <input type="date" id="abertura" name="abertura">
+                </div>
+               
+                <input type="submit" value="Cadastrar Loja">
+            </form>
+        </div>
+        <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    </main>
+    <script>
+        const cnpjInput = document.getElementById("CNPJ");
+        
+        cnpjInput.addEventListener('blur', function() {
+            const cnpj = cnpjInput.value.replace(/[^\d]+/g, '');  // Remove caracteres não numéricos
+        
+            if (cnpj.length === 14) { // Verifica se é um CNPJ válido
+                const URL_BASE = `/consultar_cnpj?cnpj=${cnpj}`;
+        
+                fetch(URL_BASE)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log("Resposta do backend:", data); // Log para visualizar a resposta do backend
+                        
+                        if (data && data.status === "OK") { // Confirma que o status é "OK"
+                            const razao = document.getElementById("razaoSocial");
+                            const nome = document.getElementById("nomeFantasia");
+                            const telefone = document.getElementById("telefone");
+                            const celular = document.getElementById("celular");
+                            const abertura = document.getElementById("abertura");
+
+        
+                            // Preenche os campos do formulário com os dados retornados
+                            razao.value = data.nome || ''; // Nome da empresa
+                            nome.value = data.fantasia || ''; // Nome fantasia
+                            telefone.value = data.telefone || ''; // Telefone
+                            celular.value = data.telefone || '';  // Ajuste conforme necessário
+                            if (data.abertura) {
+                            const [day, month, year] = data.abertura.split('/');
+                            abertura.value = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                        }
+
+                        } else {
+                            console.error("Erro: Dados não encontrados ou status inválido");
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao consultar o CNPJ:', error);
+                    });
+            } else {
+                console.error('CNPJ inválido ou incompleto');
+            }
+        });
+    </script>
+    
+</body>
+</html>
