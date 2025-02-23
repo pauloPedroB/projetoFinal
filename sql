@@ -1,13 +1,13 @@
 create database projetoAutomoveis;
 use projetoAutomoveis;
 
+
 create table usuarios(
 id_usuario int auto_increment primary key,
 email_usuario varchar(120) unique not null,
 pass_usuario varchar(300) not null,
 verificado datetime
 );
-
 select * from usuarios;
 create table enderecos(
 id int auto_increment primary key,
@@ -25,4 +25,27 @@ usado bool not null,
 foreign key(id_user) references usuarios(id_usuario)
 );
 
+create table lojas(
+id_loja int auto_increment primary key,
+cnpj char(14) unique not null,
+nomeFantasia varchar(65) not null,
+razaoSocial varchar(65) not null,
+telefone varchar(20) not null,
+celular varchar(20) null,
+abertura date not null,
+id_usuario int not null,
+foreign key(id_usuario) references usuarios(id_usuario)
+);
+
+create table clientes(
+id_cliente int auto_increment primary key,
+cpf char(11) not null unique,
+nome varchar(65) not null,
+telefone varchar(20) not null,
+dtNascimento date not null,
+genero int not null,
+carro int not null,
+id_usuario int not null,
+foreign key(id_usuario) references usuarios(id_usuario)
+);
 

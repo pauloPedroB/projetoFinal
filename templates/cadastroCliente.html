@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Pessoa Física</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+</head>
+<body>
+    <main class="mainLoja">
+        <div class="container">
+            <h1>Tela de Cadastro de Cliente</h1>
+            <form action="/cadastrarCliente" method="post">
+                <h3>{{erro}}</h3>
+                <label for="CNPJ">CPF</label>
+                <span class="error-message" id="CPFerror"></span>
+                <input type="text" id="CPF" name="CPF" placeholder="CPF: (APENAS NÚMEROS)">
+
+                <label for="nomeFantasia">Nome Completo</label>
+                <span class="error-message" id="nameError"></span>
+                <input type="text" id="name" name="name">
+
+                <label for="telefone">Telefone</label>
+                <span class="error-message" id="telefoneError"></span>
+                <input type="text" id="telefone" name="telefone">
+
+                <label for="celular">Data de Nascimento</label>
+                <span class="error-message" id="dataError"></span>
+                <input type="date" id="data" name="data">
+
+                <label for="telefone">Genero</label>
+                <span class="error-message" id="generoError"></span>
+                <select name="genero" id="genero">
+                    <option value="1">Masculino</option>
+                    <option value="2">Feminino</option>
+                    <option value="3">Transgenero</option>
+                    <option value="4">Prefiro Não informar</option>
+                </select>
+
+                 <label for="telefone">Possuí Carro?</label>
+                <span class="error-message" id="carroError"></span>
+                <select name="carro" id="carro">
+                    <option value="1">Sim</option>
+                    <option value="2">Não</option>
+                    <option value="3">Prefiro Não informar</option>
+                </select>
+                <input type="submit" value="Cadastrar Cliente">
+            </form>
+        </div>
+        <script src="{{ url_for('static', filename='js/creatCliente.js') }}"></script>
+    </main>
+  
+</body>
+</html>

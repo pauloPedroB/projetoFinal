@@ -6,7 +6,7 @@
     <title>Cadastro de Pessoa Jurídica</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
+    
 </head>
 <body>
     <main class="mainLoja">
@@ -14,36 +14,34 @@
             <h1>Tela de Cadastro de Loja</h1>
             <form action="/cadastrarLoja" method="post">
                 <h3>{{erro}}</h3>
-                <div class="dados">
-                    <label for="CNPJ">CNPJ</label>
-                    <span class="error-message" id="CNPJerror"></span>
-                    <input type="text" id="CNPJ" name="CNPJ" placeholder="CNPJ: (APENAS NÚMEROS)">
-    
-                    <label for="nomeFantasia">Nome Fantasia</label>
-                    <span class="error-message" id="nameError"></span>
-                    <input type="text" id="nomeFantasia" name="nomeFantasia">
-    
-                    <label for="razaoSocial">Razão Social</label>
-                    <span class="error-message" id="razaoError"></span>
-                    <input type="text" id="razaoSocial" name="razaoSocial">
-    
-                    <label for="telefone">Telefone</label>
-                    <span class="error-message" id="telefoneError"></span>
-                    <input type="text" id="telefone" name="telefone">
-    
-                    <label for="celular">Celular</label>
-                    <span class="error-message" id="cellError"></span>
-                    <input type="text" id="celular" name="celular">
-    
-                    <label for="celular">Abertura</label>
-                    <span class="error-message" id="dataError"></span>
-                    <input type="date" id="abertura" name="abertura">
-                </div>
+                <label for="CNPJ">CNPJ</label>
+                <span class="error-message" id="CNPJerror"></span>
+                <input type="text" id="CNPJ" name="CNPJ" placeholder="CNPJ: (APENAS NÚMEROS)">
+
+                <label for="nomeFantasia">Nome Fantasia</label>
+                <span class="error-message" id="nameError"></span>
+                <input type="text" id="nomeFantasia" name="nomeFantasia">
+
+                <label for="razaoSocial">Razão Social</label>
+                <span class="error-message" id="razaoError"></span>
+                <input type="text" id="razaoSocial" name="razaoSocial">
+
+                <label for="telefone">Telefone</label>
+                <span class="error-message" id="telefoneError"></span>
+                <input type="text" id="telefone" name="telefone">
+
+                <label for="celular">Celular</label>
+                <span class="error-message" id="cellError"></span>
+                <input type="text" id="celular" name="celular">
+
+                <label for="celular">Abertura</label>
+                <span class="error-message" id="dataError"></span>
+                <input type="date" id="abertura" name="abertura">
                
                 <input type="submit" value="Cadastrar Loja">
             </form>
         </div>
-        <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/creatLoja.js') }}"></script>
     </main>
     <script>
         const cnpjInput = document.getElementById("CNPJ");

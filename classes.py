@@ -10,6 +10,9 @@ class Usuarios(db.Model):
     pass_usuario = db.Column(db.String(300), nullable=False)
     verificado = db.Column(db.DateTime, nullable=False)
     tokens = db.relationship('Tokens', backref='usuario', cascade="all, delete-orphan")
+    Loja = db.relationship('Loja', backref='usuario', cascade="all, delete-orphan")
+    Cliente = db.relationship('Cliente', backref='usuario', cascade="all, delete-orphan")
+
 
     def __repr__(self):
         return f'<Usuario {self.email_usuario}>'
@@ -36,3 +39,37 @@ class Tokens(db.Model):
 
     def __repr__(self):
         return f'<Token {self.id_token}>'
+    
+
+class Loja(db.Model):
+    __tablename__ = 'lojas'
+
+    id_loja = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    cnpj = db.Column(db.String(14), unique=True, nullable=False)
+    nomeFantasia = db.Column(db.String(65), nullable=False)
+    razaoSocial = db.Column(db.String(65), nullable=False)
+    telefone = db.Column(db.String(20), nullable=False)
+    celular = db.Column(db.String(20), nullable=True)
+    abertura = db.Column(db.Date, nullable=False)
+
+    id_usuario = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), nullable=False)
+
+    def __repr__(self):
+        return f'<Loja {self.cnpj}>'
+    
+class Cliente(db.Model):
+    __tablename__ = 'clientes'
+
+    id_cliente = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    cpf = db.Column(db.String(11), unique=True, nullable=False)
+    nome = db.Column(db.String(65), nullable=False)
+    telefone = db.Column(db.String(20), nullable=False)
+    dtNascimento = db.Column(db.Date, nullable=False)
+    genero = db.Column(db.Integer, nullable=False)
+    carro = db.Column(db.Integer, nullable=False)
+    
+
+    id_usuario = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), nullable=False)
+
+    def __repr__(self):
+        return f'<Loja {self.cnpj}>'

@@ -62,7 +62,6 @@ def validar_cadastro(email,password,password_confirm):
 
 def enviarEmail(metodo,id,email):
 
-
     id_token = gerar_token()
     horario = horario_br()
     novo_token = Tokens(id_token=id_token, id_user=id, dt_cr=horario,usado = False)
@@ -219,6 +218,7 @@ def obter_lat_long(endereco):
     
     return None
 
+# ------------------------------- VALIDAR CADASTRO LOJA --------------------------------------------
 def validar_cadastroLoja(cnpj,nome,razao,tell,cell,data):
     if validar_cnpj(cnpj) == False:
         return False, "CNPJ INVÁLIDO"
@@ -258,10 +258,6 @@ def validar_cnpj(cnpj):
 
     return cnpj.endswith(digito1 + digito2)
 
-def validar_telefone(telefone):
-    """Valida telefone e celular: apenas números e tamanho entre 10 e 11 dígitos"""
-    telefone_limpo = re.sub(r'\D', '', telefone)  # Remove caracteres não numéricos
-    return bool(re.fullmatch(r'\d{10,11}', telefone_limpo))
 
 
 def validar_data_abertura(data_str):
@@ -281,7 +277,79 @@ def validar_data_abertura(data_str):
     
     except ValueError:
         return False  # Se a data não for válida no formato "%Y-%m-%d", retorna False
+    
 
+
+# ---------------------------------------------------------------------------------------------------
+
+
+# ------------------------------- VALIDAR CADASTRO CLIENTE --------------------------------------------
+
+def validar_cadastroCliente(cpf,nome,tell,data,genero, carro):
+    if validar_cpf(cpf) == False:
+        return False, "CPF INVÁLIDO"
+    if validar_nome(nome)  == False:
+        return False,"Nome Inválido"
+    if validar_telefone(tell)  == False:
+        return False,"Telefone Inválido"
+    if validar_data_nascimento(data)  == False:
+        return False,"Data inválida"
+    if validar_genero(genero) == False:
+        return False, "opção de Gênero não disponível"
+    if validar_carro(carro) == False:
+        return False, "opção de Carro não disponível"
+
+    return True,"Sucesso"
+
+def validar_genero(genero):
+    """Valida a escolha do gênero (valores entre 1 e 4)."""
+    return genero in {"1", "2", "3", "4"}
+
+def validar_carro(carro):
+    """Valida a escolha sobre possuir carro (valores entre 1 e 3)."""
+    return carro in {"1", "2", "3"}
+
+def validar_cpf(cpf):
+    """Valida um CPF verificando o formato e os dígitos verificadores."""
+    cpf = re.sub(r'\D', '', cpf)  # Remove caracteres não numéricos
+
+    if len(cpf) != 11 or cpf in (str(i) * 11 for i in range(10)):
+        return False
+
+    def calcular_digito(cpf_parcial, pesos):
+        soma = sum(int(d) * p for d, p in zip(cpf_parcial, pesos))
+        resto = soma % 11
+        return '0' if resto < 2 else str(11 - resto)
+
+    pesos_1 = list(range(10, 1, -1))
+    pesos_2 = list(range(11, 1, -1))
+
+    digito1 = calcular_digito(cpf[:9], pesos_1)
+    digito2 = calcular_digito(cpf[:9] + digito1, pesos_2)
+
+    return cpf.endswith(digito1 + digito2)
+
+
+def validar_data_nascimento(data_str):
+    """Verifica se a data de nascimento está no passado e se a idade é válida."""
+    try:
+        data_nascimento = datetime.strptime(data_str, "%Y-%m-%d")
+        data_atual = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+
+        if data_nascimento >= data_atual:
+            return False  
+
+        idade = (data_atual - data_nascimento).days // 365
+        return idade >= 18
+
+    except ValueError:
+        return False  
+    
+#-----------------------------------------------------------
+def validar_telefone(telefone):
+    """Valida telefone e celular: apenas números e tamanho entre 10 e 11 dígitos"""
+    telefone_limpo = re.sub(r'\D', '', telefone)  # Remove caracteres não numéricos
+    return bool(re.fullmatch(r'\d{10,11}', telefone_limpo))
 
 
 def validar_nome(nome):
@@ -298,5 +366,3 @@ def validar_nome(nome):
         return False
     
     return True
-
-

@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from geopy.distance import geodesic
 import validacoes
-from classes import db, Usuarios, Endereco, Tokens
+from classes import db, Usuarios, Endereco, Tokens, Cliente, Loja
 import requests
 
 app = Flask(__name__)
@@ -25,6 +25,12 @@ def verificarCadastro():
         return redirect('/VerifiqueseuEmail')
 
     return None
+
+def verificarUsuario():
+    if(Loja.query.filter_by(id_usuario=session['user_id']).first()):
+        return redirect(url_for('menu',mensagem = "Esse Usuário já está vinculado a uma loja"))
+    elif(Cliente.query.filter_by(id_usuario=session['user_id']).first()):
+        return redirect(url_for('menu',mensagem = "Esse Usuário já possuí cadastro como Cliente"))
 
 def verificarLog():
     if 'user_id' in session:
@@ -239,7 +245,7 @@ def menu():
     if mensagem == None:
         mensagem = ""
  
-    return render_template('menu.html', mensagem = "Validado")
+    return render_template('menu.html', mensagem = mensagem)
 
 @app.route('/cadastroLoja')
 def cadastroLoja():
@@ -247,6 +253,9 @@ def cadastroLoja():
     verificar = verificarCadastro()
     if verificar:
         return verificar
+    verificarLojaCliente = verificarUsuario()
+    if verificarLojaCliente:
+        return verificarLojaCliente
     
     erro = request.args.get('erro')
     if erro == None:
@@ -270,17 +279,83 @@ def consultar_cnpj():
 
 @app.route('/cadastrarLoja',methods=['POST'])
 def cadastrarLoja():
-    cnpj = request.form['CNPJ']
-    nomeFantasia = request.form['nomeFantasia']
-    razaoSocial = request.form['razaoSocial']
-    telefone = request.form['telefone']
-    celular = request.form['celular']
-    abertura = request.form['abertura']
+    try:
+        verificar = verificarCadastro()
+        if verificar:
+            return verificar
+        verificarLojaCliente = verificarUsuario()
+        if verificarLojaCliente:
+            return verificarLojaCliente
+        cnpj_user = request.form['CNPJ']
+        nomeFantasia = request.form['nomeFantasia']
+        razaoSocial = request.form['razaoSocial']
+        telefone = request.form['telefone']
+        celular = request.form['celular']
+        abertura = request.form['abertura']
 
-    cadastro,mensagem = validacoes.validar_cadastroLoja(cnpj,nomeFantasia,razaoSocial,telefone,celular,abertura)
-    if cadastro:
+        cadastro,mensagem = validacoes.validar_cadastroLoja(cnpj_user,nomeFantasia,razaoSocial,telefone,celular,abertura)
+        if cadastro == False:
+            return redirect(url_for('cadastroLoja',erro = mensagem))
+        elif(Loja.query.filter_by(cnpj=cnpj_user).first()):
+            return redirect(url_for('cadastroLoja',erro = "Já possuí uma loja vinculada com esse CNPJ"))
+        nova_loja = Loja(cnpj=cnpj_user, nomeFantasia = nomeFantasia, razaoSocial = razaoSocial, telefone = telefone, celular = celular, abertura = abertura, id_usuario = session['user_id'])
+        db.session.add(nova_loja)
+        db.session.commit()
+
         return redirect(url_for('menu'))
-    return redirect(url_for('cadastroLoja',erro = mensagem))
+        
+    except:
+        return redirect(url_for('cadastroLoja',erro = "Algo deu errado, tente novamente"))
+
+
+@app.route('/cadastroCliente')
+def cadastroCliente():
+    verificar = verificarCadastro()
+    if verificar:
+        return verificar
+    verificarLojaCliente = verificarUsuario()
+    if verificarLojaCliente:
+        return verificarLojaCliente
+    
+    erro = request.args.get('erro')
+    if erro == None:
+        erro = ""
+    return render_template('cadastroCliente.html',erro = erro)
+
+@app.route('/cadastrarCliente',methods=['POST'])
+def cadastrarCliente():
+    try:
+        verificar = verificarCadastro()
+        if verificar:
+            return verificar
+        verificarLojaCliente = verificarUsuario()
+        if verificarLojaCliente:
+            return verificarLojaCliente
+        cpf = request.form['CPF']
+        nome = request.form['name']
+        dtNascimento = request.form['data']
+        telefone = request.form['telefone']
+        genero = request.form['genero']
+        carro = request.form['carro']
+
+        cadastro,mensagem = validacoes.validar_cadastroCliente(cpf,nome,telefone,dtNascimento,genero,carro)
+        if cadastro == False:
+            return redirect(url_for('cadastroCliente',erro = mensagem))
+        elif(Loja.query.filter_by(id_usuario=session['user_id']).first()):
+            return redirect(url_for('cadastroLoja',erro = "Esse Usuário já possuí uma loja vinculada ao seu email"))
+        elif(Cliente.query.filter_by(id_usuario=session['user_id']).first()):
+            return redirect(url_for('cadastroLoja',erro = "Esse Usuário já possuí cadastro como Cliente"))
+        elif(Cliente.query.filter_by(cpf=cpf).first()):
+            return redirect(url_for('cadastroLoja',erro = "Já possuí um cliente cadastrado com esse CPF"))
+        novo_Cliente = Cliente(cpf=cpf, dtNascimento = dtNascimento, nome = nome, telefone = telefone, genero = genero, carro = carro, id_usuario = session['user_id'])
+        db.session.add(novo_Cliente)
+        db.session.commit()
+        return redirect(url_for('menu'))
+    
+    except:
+        return redirect(url_for('cadastroCliente',erro = "Algo deu errado, tente novamente"))
+
+
 
 @app.route('/buscar_cep', methods=['GET'])
 def buscar_cep():
