@@ -13,6 +13,8 @@ email_service = Blueprint('email', __name__)
 
 @email_service.route('/verificarEmail')
 def verificarEmail():
+    if 'user_verificado' in session and session['user_verificado'] is not None:
+        return redirect(url_for('menu'))
     mensagem = request.args.get('mensagem', "")
     return render_template('email.html', mensagem=mensagem)
 
@@ -20,6 +22,8 @@ def verificarEmail():
 @email_service.route('/enviar')
 def enviar():
     try:
+        if 'user_verificado' in session and session['user_verificado'] is not None:
+            return redirect(url_for('menu'))
         enviarEmail(1,session['user_id'],session['user_email'])
         return redirect(url_for('menu'))
     

@@ -8,7 +8,7 @@ from geopy.geocoders import Nominatim, OpenCage
 from geopy.exc import GeocoderTimedOut
 from geopy.distance import geodesic
 
-from classes import db, Usuarios, Endereco, Tokens,Loja,Cliente
+from classes import Loja,Cliente,Endereco
 from flask import session,redirect,url_for
 
 
@@ -29,6 +29,10 @@ def verificarUsuario():
     elif(Cliente.query.filter_by(id_usuario=session['user_id']).first()):
         return redirect(url_for('menu',mensagem = "Esse Usuário já possuí cadastro como Cliente"))
 
+def verificarEndereco():
+    if(Endereco.query.filter_by(id_usuario = session['user_id'])):
+        return redirect(url_for('endereco.cadastro'))
+
 
 def validar_email(email):
     regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
@@ -36,7 +40,7 @@ def validar_email(email):
     if len(email) > 254:
         return False
     
-    if not re.match(regex, email):  # Corrigido aqui
+    if not re.match(regex, email):
         return False
    
     return True

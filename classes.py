@@ -24,6 +24,7 @@ class Endereco(db.Model):
     nmr = db.Column(db.Integer, nullable=False)
     latitude = db.Column(db.String(50), nullable=False)
     longitude = db.Column(db.String(50), nullable=False)
+    id_usuario = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), nullable=False)
 
     def __repr__(self):
         return f'<Endereco {self.rua}>'

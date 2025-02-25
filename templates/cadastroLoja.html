@@ -50,7 +50,7 @@
             const cnpj = cnpjInput.value.replace(/[^\d]+/g, '');  // Remove caracteres não numéricos
         
             if (cnpj.length === 14) { // Verifica se é um CNPJ válido
-                const URL_BASE = `/consultar_cnpj?cnpj=${cnpj}`;
+                const URL_BASE = `/apis/consultar_cnpj?cnpj=${cnpj}`;
         
                 fetch(URL_BASE)
                     .then(response => response.json())
