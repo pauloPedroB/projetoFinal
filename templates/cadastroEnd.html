@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro de Pessoa Jurídica</title>
+    <title>Cadastro de Endereço</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
 </head>
 <body>
     <main class="mainLoja">
@@ -14,30 +13,32 @@
             <h1>Tela de Cadastro de Endereço</h1>
             <form action="/loja/cadastrar" method="post">
                 <h3>{{erro}}</h3>
+
                 <label for="CEP">CEP</label>
                 <span class="error-message" id="cepError"></span>
-                <input type="text" id="CEP" name="CEP" placeholder="CEP: (APENAS NÚMEROS)">
+                <input type="text" id="CEP" name="CEP" placeholder="CEP: (APENAS NÚMEROS)" />
 
-                <label for="nomeFantasia">Rua</label>
+                <label for="rua">Rua</label>
                 <span class="error-message" id="ruaError"></span>
                 <input type="text" id="rua" name="rua" disabled>
 
-                <label for="razaoSocial">Número</label>
+                <label for="numero">Número</label>
                 <span class="error-message" id="numeroError"></span>
                 <input type="number" id="numero" name="numero">
 
-                <label for="telefone">Complemento</label>
+                <label for="complemento">Complemento</label>
                 <span class="error-message" id="complementoError"></span>
                 <input type="text" id="complemento" name="complemento">
 
-                <label for="celular">Bairro</label>
+                <label for="bairro">Bairro</label>
                 <span class="error-message" id="bairroError"></span>
                 <input type="text" id="bairro" name="bairro" disabled>
 
-                <label for="celular">Cidade</label>
+                <label for="cidade">Cidade</label>
                 <span class="error-message" id="cidadeError"></span>
-                <input type="date" id="cidade" name="cidade" disabled>
+                <input type="text" id="cidade" name="cidade" disabled>
 
+                <label for="uf">UF</label>
                 <select name="uf" id="uf" disabled>
                     <option value="">Selecione a UF</option>
                     <option value="AC">Acre</option>
@@ -67,16 +68,71 @@
                     <option value="SP">São Paulo</option>
                     <option value="SE">Sergipe</option>
                     <option value="TO">Tocantins</option>
-                  </select>
-                  
-               
+                </select>
+
                 <input type="submit" value="Cadastrar Loja">
             </form>
         </div>
-        <script src="{{ url_for('static', filename='js/creatLoja.js') }}"></script>
     </main>
+    
     <script>
+        // Aguardar o DOM carregar completamente antes de adicionar o evento
+        document.addEventListener('DOMContentLoaded', function() {
+            // Selecionando o campo de CEP
+            var cepInput = document.getElementById('CEP');
+            if (cepInput) {
+                // Adicionar o evento de blur no campo CEP para chamar a função
+                cepInput.addEventListener('blur', buscarEnderecoPorCEP);
+            }
+        });
 
+        // Função para buscar o endereço ao digitar o CEP
+        function buscarEnderecoPorCEP() {
+            var cep = document.getElementById('CEP').value.replace(/\D/g, ''); // Retirar caracteres não numéricos
+
+            // Verifica se o CEP tem 8 dígitos
+            if (cep.length === 8) {
+                var url = `https://viacep.com.br/ws/${cep}/json/`;
+
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.erro) {
+                            alert("CEP não encontrado!");
+                            return;
+                        }
+
+                        // Preenchendo os campos com os dados do endereço
+                        document.getElementById('rua').value = data.logradouro;
+                        document.getElementById('bairro').value = data.bairro;
+                        document.getElementById('cidade').value = data.localidade;
+
+                        // Preenchendo a UF
+                        var ufSelect = document.getElementById('uf');
+                        var options = ufSelect.options;
+                        for (var i = 0; i < options.length; i++) {
+                            if (options[i].value === data.uf) {
+                                ufSelect.selectedIndex = i; // Alterando o valor da UF no select
+                                break;
+                            }
+                        }
+
+ 
+
+                    })
+                    .catch(error => {
+                        alert("Erro ao buscar o endereço. Tente novamente.");
+                    });
+            } else {
+                // Limpa os campos caso o CEP tenha formato incorreto
+                document.getElementById('rua').value = '';
+                document.getElementById('bairro').value = '';
+                document.getElementById('cidade').value = '';
+                document.getElementById('uf').selectedIndex = 0;
+
+            
+            }
+        }
     </script>
 </body>
 </html>
