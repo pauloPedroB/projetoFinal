@@ -1,17 +1,33 @@
 import re
-import secrets
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from datetime import datetime, timedelta
+
+
+from datetime import datetime
 import pytz
 import requests
 from geopy.geocoders import Nominatim, OpenCage
 from geopy.exc import GeocoderTimedOut
 from geopy.distance import geodesic
 
-from classes import db, Usuarios, Endereco, Tokens
-from flask import session
+from classes import db, Usuarios, Endereco, Tokens,Loja,Cliente
+from flask import session,redirect,url_for
+
+
+
+def verificarCadastro():
+    if 'user_id' not in session:
+        return redirect(url_for('auth.inicio'))
+    
+    if 'user_verificado' not in session or session['user_verificado'] is None:
+        return redirect(url_for('email.verificarEmail'))
+
+    return None
+
+
+def verificarUsuario():
+    if(Loja.query.filter_by(id_usuario=session['user_id']).first()):
+        return redirect(url_for('menu',mensagem = "Esse Usuário já está vinculado a uma loja"))
+    elif(Cliente.query.filter_by(id_usuario=session['user_id']).first()):
+        return redirect(url_for('menu',mensagem = "Esse Usuário já possuí cadastro como Cliente"))
 
 
 def validar_email(email):
@@ -60,109 +76,14 @@ def validar_cadastro(email,password,password_confirm):
     
     return True, "Cadastrado com sucesso!"
 
-def enviarEmail(metodo,id,email):
-
-    id_token = gerar_token()
-    horario = horario_br()
-    novo_token = Tokens(id_token=id_token, id_user=id, dt_cr=horario,usado = False)
-    if metodo == 1:
-        if 'user_verificado' in session:
-            return None
-        enviar_validacao(email,novo_token.id_token)
-    elif metodo == 2:
-        enviar_email_recuperacao(email,novo_token.id_token)
-    db.session.add(novo_token)
-    db.session.commit()
-
-def enviar_validacao(email,token):
-    
-    corpo_email = f"""
-    Olá, {email}!
-    <br></br>
-    Recebemos uma solicitação de cadastro em nosso site usando este email
-    <br></br>
-    Se você está tentando se cadastrar, clique nest link:
-    <br></br>
-    http://127.0.0.1:5000/validar/{token}
-    <br></br>
-    Este link é válido por 2 horas.
-    """
-
-    msg = MIMEMultipart()
-    msg['Subject'] = "Assunto"
-    msg['From'] = 'siqueirapedropaulo93@gmail.com'
-    msg['To'] = email
-    senha = 'gelmtdnmupufjiqd'  # Senha de app gerada
-
-    msg.attach(MIMEText(corpo_email, 'html', 'utf-8'))
-    try:
-       
-        s = smtplib.SMTP('smtp.gmail.com', 587)
-        s.starttls()
-        s.login(msg['From'], senha)
-        s.sendmail(msg['From'], [msg['To']], msg.as_string())
-        s.quit()
-
-        return True
-    except Exception as e:
-
-        return False
-    
-def enviar_email_recuperacao(email,token):
-    
-    corpo_email = f"""
-    Olá, {email}!
-    <br></br>
-    Recebemos uma solicitação para redefinir sua senha. Se você não solicitou a redefinição, ignore este email.
-    <br></br>
-    Para redefinir sua senha, clique no link abaixo:
-    <br></br>
-    http://127.0.0.1:5000/recuperar/{token}
-    <br></br>
-    Este link é válido por 2 horas.
-    """
-
-    msg = MIMEMultipart()
-    msg['Subject'] = "Assunto"
-    msg['From'] = 'siqueirapedropaulo93@gmail.com'
-    msg['To'] = email
-    senha = 'gelmtdnmupufjiqd'  # Senha de app gerada
-
-    msg.attach(MIMEText(corpo_email, 'html', 'utf-8'))
 
 
-    try:
-       
-        s = smtplib.SMTP('smtp.gmail.com', 587)
-        s.starttls()
-        s.login(msg['From'], senha)
-        s.sendmail(msg['From'], [msg['To']], msg.as_string())
-        s.quit()
 
-        return True
-    except Exception as e:
-
-        return False
-
-def gerar_token(comprimento=32):
-    return secrets.token_hex(comprimento)
 
 def horario_br():
     fuso_horario_brasilia = pytz.timezone('America/Sao_Paulo')
     return datetime.now(fuso_horario_brasilia)
 
-def verificar_expiracao_token(token):
-    agora = datetime.now()
-    
-    tempo_criacao = token.dt_cr
-    
-    limite = tempo_criacao + timedelta(hours=2)
-    
-    if agora > limite:
-        return True 
-    else:
-        return False
-    
 
 def consultar_cep(cep):
     url = f"https://viacep.com.br/ws/{cep}/json/"

@@ -13,7 +13,7 @@
         
         <div class="container">
             <h1>Tela de Login</h1>
-            <form action="/entrar" method="post">
+            <form action="/auth/entrar" method="post">
                 <h3>{{erro}}</h3>
                 <label for="login">Email</label>
                 <input type="text" id="email" name="email">
@@ -25,8 +25,8 @@
                 </div>
                 <input type="submit" value="Entrar">
             </form>
-            <a href="/cadastro">Cadastre-se</a>
-            <a href="/recuperar">Esqueceu a senha</a>
+            <a href="/auth/cadastro">Cadastre-se</a>
+            <a href="/auth/recuperar">Esqueceu a senha</a>
         </div>
 
         <script src="{{ url_for('static', filename='js/app.js') }}"></script>

@@ -8,7 +8,9 @@ email_usuario varchar(120) unique not null,
 pass_usuario varchar(300) not null,
 verificado datetime
 );
+
 select * from usuarios;
+
 create table enderecos(
 id int auto_increment primary key,
 rua varchar(50),
