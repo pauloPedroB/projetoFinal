@@ -13,10 +13,16 @@ select * from usuarios;
 
 create table enderecos(
 id int auto_increment primary key,
-rua varchar(50),
+cep char(8) unique,
+rua varchar(65),
 nmr int,
+cidade varchar(40),
+uf char(2),
+complemento varchar(200),
 latitude varchar(50),
-longitude varchar(50)
+longitude varchar(50),
+id_usuario int,
+foreign key (id_usuario) references usuarios(id_usuario)
 );
 
 create table tokens(
@@ -50,4 +56,6 @@ carro int not null,
 id_usuario int not null,
 foreign key(id_usuario) references usuarios(id_usuario)
 );
+
+update usuarios set verificado = "20250206" where id_usuario = 1;
 
