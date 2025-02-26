@@ -25,8 +25,7 @@ def cadastro():
 @endereco_bp.route('/cadastrar',methods=['POST'])
 def cadastrar():
     try:
-        if(Endereco.query.filter_by(id_usuario = session['user_id']).first()):
-            return redirect(url_for('endereco.cadastro',erro = "Já existe um endereço vinculado à esse usuário, se precisa atualizar esse endereço, atualize-o na página de perfil"))
+        
         verificar = validacoes.verificarCadastro()
         if verificar:
             return verificar
@@ -35,6 +34,10 @@ def cadastrar():
         if verificarLojaCliente:
             return verificarLojaCliente
         
+        if(Endereco.query.filter_by(id_usuario = session['user_id']).first()):
+            return redirect(url_for('endereco.cadastro',erro = "Já existe um endereço vinculado à esse usuário, se precisa atualizar esse endereço, atualize-o na página de perfil"))
+        
+        #if(validar_endereco())
         erro = request.args.get('erro')
         if erro == None:
             erro = ""
@@ -48,7 +51,7 @@ def validarCadastroEndereco(cep,rua, numero, bairro, complemento, uf):
 
 
 
-def validar_formulario(cep, numero, complemento, rua, cidade, uf):
+def validar_endereco(cep, numero, complemento, rua, cidade, uf):
     MAX_RUA_LENGTH = 65
     MAX_CIDADE_LENGTH = 40
     MAX_CEP_LENGTH = 8
