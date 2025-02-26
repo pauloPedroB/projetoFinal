@@ -22,6 +22,10 @@ def verificarCadastro():
 
     return None
 
+def verificarLojaCliente():
+    if Loja.query.filter_by(id_usuario=session['user_id']).first() is None and Cliente.query.filter_by(id_usuario=session['user_id']).first() is None:
+        return redirect(url_for('menu',mensagem = "Cadastre-se como cliente ou loja"))
+        
 
 def verificarUsuario():
     if(Loja.query.filter_by(id_usuario=session['user_id']).first()):
@@ -30,7 +34,7 @@ def verificarUsuario():
         return redirect(url_for('menu',mensagem = "Esse Usuário já possuí cadastro como Cliente"))
 
 def verificarEndereco():
-    if(Endereco.query.filter_by(id_usuario = session['user_id'])):
+    if(Endereco.query.filter_by(id_usuario = session['user_id']).first() is None):
         return redirect(url_for('endereco.cadastro'))
 
 
