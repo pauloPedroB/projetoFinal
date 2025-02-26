@@ -20,7 +20,11 @@ class Usuarios(db.Model):
 class Endereco(db.Model):
     __tablename__ = 'enderecos'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    rua = db.Column(db.String(50), nullable=False)
+    rua = db.Column(db.String(65), nullable=False)
+    cidade = db.Column(db.String(40), nullable=False)
+    cep = db.Column(db.String(8),unique = True, nullable=False)
+    complemento = db.Column(db.String(200), nullable=False)
+    uf = db.Column(db.String(2), nullable=False)
     nmr = db.Column(db.Integer, nullable=False)
     latitude = db.Column(db.String(50), nullable=False)
     longitude = db.Column(db.String(50), nullable=False)

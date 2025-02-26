@@ -11,7 +11,7 @@
     <main class="mainLoja">
         <div class="container">
             <h1>Tela de Cadastro de Endereço</h1>
-            <form action="/loja/cadastrar" method="post">
+            <form action="/" method="post">
                 <h3>{{erro}}</h3>
 
                 <label for="CEP">CEP</label>
@@ -73,6 +73,7 @@
                 <input type="submit" value="Cadastrar Loja">
             </form>
         </div>
+        <script src="{{ url_for('static', filename='js/creatEndereco.js') }}"></script>
     </main>
     
     <script>
