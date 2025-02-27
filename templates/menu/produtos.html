@@ -10,7 +10,7 @@
     <header class="cabeçalho1">
         <div class="options">
   
-            <a href="/auth/sair"><h4>Menu</h4></a>
+            <a href="/menu/principal"><h4>Menu</h4></a>
 
         </div>
 
@@ -20,9 +20,9 @@
         </div>
         
     </header>
-    {% if mensagem !="" %}
+    {% if erro !="" %}
     <div class="mensagem">
-        <h3>{{mensagem}}</h3>
+        <h3>{{erro}}</h3>
     </div>
     {% endif %}
     <a href="/produto/cadastro">Cadastrar Produtos</a>
@@ -36,7 +36,7 @@
                     <form action="/produto/editar">
                         <input type="submit" value="Editar">
                     </form>
-                    <form action="/produto/editar">
+                    <form action="/produto/excluir/{{produto.id_produto}}" method="post">
                         <input type="submit" value="Exluir">
                     </form>
                 </div>
