@@ -3,12 +3,11 @@ import re
 
 from datetime import datetime
 import pytz
-import requests
 from geopy.geocoders import Nominatim, OpenCage
 from geopy.exc import GeocoderTimedOut
 from geopy.distance import geodesic
 
-from classes import Loja,Cliente,Endereco
+from classes import Loja,Cliente,Endereco,Administrador,Usuarios
 from flask import session,redirect,url_for
 
 
@@ -37,22 +36,24 @@ def verificarCadastro():
     return None  # Adicionado para garantir um retorno explícito
 
 def verificarLojaCliente():
-    if Loja.query.filter_by(id_usuario=session['user_id']).first() is None and Cliente.query.filter_by(id_usuario=session['user_id']).first() is None:
+    usuario = Usuarios.query.filter(Usuarios.id_usuario == session['user_id']).first()
+    if usuario.typeUser == None:
         return redirect(url_for('menu.escolha', mensagem="Cadastre-se como cliente ou loja"))
     
     return None  # Adicionado para evitar retorno implícito de None
 
 def verificarUsuario():
-    if Loja.query.filter_by(id_usuario=session['user_id']).first():
-        return redirect(url_for('menu.principal', mensagem="Esse Usuário já está vinculado a uma loja"))
-    elif Cliente.query.filter_by(id_usuario=session['user_id']).first():
-        return redirect(url_for('menu.principal', mensagem="Esse Usuário já possuí cadastro como Cliente"))
+    usuario = Usuarios.query.filter(Usuarios.id_usuario == session['user_id']).first()
+    if usuario.typeUser != None:
+        return redirect(url_for('menu.principal', mensagem="Esse Usuário já possuí cadastro como Cliente, Loja ou Administrador"))
 
-    return None  # Adicionado para evitar retorno implícito de None
+    return None
 
 def verificarEndereco():
     if Endereco.query.filter_by(id_usuario=session['user_id']).first() is None:
-        return redirect(url_for('endereco.cadastro'))
+        if Administrador.query.filter_by(id_usuario=session['user_id']).first() is None:
+            return redirect(url_for('endereco.cadastro'))
+        return None
     
     return None  # Adicionado para garantir um retorno explícito
 

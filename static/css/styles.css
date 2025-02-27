@@ -150,9 +150,16 @@ header.cabeçalho1 {
     gap: 10px; 
 }
 
+
 header.cabeçalho1 h3 {
     color: white;
     font-size: 24px; /* Tamanho do texto */
+    margin: 0;
+    letter-spacing: 1px; /* Espaçamento entre letras */
+    text-transform: uppercase; /* Deixa o texto em maiúsculas */
+}
+header h4 {
+    color: white;
     margin: 0;
     letter-spacing: 1px; /* Espaçamento entre letras */
     text-transform: uppercase; /* Deixa o texto em maiúsculas */

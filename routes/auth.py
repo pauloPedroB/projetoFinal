@@ -1,7 +1,7 @@
 # /routes/auth.py
 from flask import Blueprint, render_template, request, redirect, url_for, session
 from classes import db, Usuarios, Tokens
-import validacoes
+import services.validacoes as validacoes
 from services.email_service import enviarEmail,verificar_expiracao_token
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -91,6 +91,8 @@ def entrar():
                 session['user_id'] = usuario.id_usuario
                 session['user_email'] = usuario.email_usuario
                 session['user_verificado'] = usuario.verificado
+                session['typeUser'] = usuario.typeUser
+
 
                 return redirect(url_for('menu.principal'))
 

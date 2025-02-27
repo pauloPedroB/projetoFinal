@@ -4,7 +4,7 @@ from email.mime.text import MIMEText
 import secrets
 import smtplib
 from datetime import datetime, timedelta
-import validacoes
+import services.validacoes as validacoes
 from classes import db,Tokens,Usuarios
 
 

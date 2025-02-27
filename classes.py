@@ -12,6 +12,7 @@ class Usuarios(db.Model):
     tokens = db.relationship('Tokens', backref='usuario', cascade="all, delete-orphan")
     Loja = db.relationship('Loja', backref='usuario', cascade="all, delete-orphan")
     Cliente = db.relationship('Cliente', backref='usuario', cascade="all, delete-orphan")
+    typeUser = db.Column(db.Integer, nullable=True)
 
 
     def __repr__(self):
@@ -74,6 +75,17 @@ class Cliente(db.Model):
     genero = db.Column(db.Integer, nullable=False)
     carro = db.Column(db.Integer, nullable=False)
     
+
+    id_usuario = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), nullable=False)
+
+    def __repr__(self):
+        return f'<Loja {self.cnpj}>'
+
+class Administrador(db.Model):
+    __tablename__ = 'administradores'
+
+    id_adm = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    nome = db.Column(db.String(65), nullable=False)
 
     id_usuario = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), nullable=False)
 

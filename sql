@@ -1,14 +1,14 @@
+drop database projetoautomoveis;
 create database projetoAutomoveis;
 use projetoAutomoveis;
-
 
 create table usuarios(
 id_usuario int auto_increment primary key,
 email_usuario varchar(120) unique not null,
 pass_usuario varchar(300) not null,
-verificado datetime
+verificado datetime,
+typeUser int
 );
-
 
 create table enderecos(
 id int auto_increment primary key,
@@ -56,5 +56,16 @@ carro int not null,
 id_usuario int not null,
 foreign key(id_usuario) references usuarios(id_usuario)
 );
-select * from clientes;
+
+
+create table administradores(
+id_adm int auto_increment primary key,
+nome varchar(65) not null,
+id_usuario int not null,
+foreign key(id_usuario) references usuarios(id_usuario)
+);
+
+select * from usuarios;
+#insert into administradores (nome, id_usuario) values ("Pedro Paulo", 1);
+
 

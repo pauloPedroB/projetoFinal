@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
-from classes import db, Cliente
+from classes import db, Cliente,Usuarios
 import re
-import validacoes
+import services.validacoes as validacoes
 
 cliente_bp = Blueprint('cliente', __name__)
 
@@ -36,12 +36,17 @@ def cadastrar():
         genero = request.form['genero']
         carro = request.form['carro']
 
+        cpf = re.sub(r'\D', '', cpf)
+
         cadastro,mensagem = validacoes.validar_cadastroCliente(cpf,nome,telefone,dtNascimento,genero,carro)
         if cadastro == False:
             return redirect(url_for('cliente.cadastro',erro = mensagem))
         elif(Cliente.query.filter_by(cpf=cpf).first()):
             return redirect(url_for('cliente.cadastro',erro = "Já possuí um cliente cadastrado com esse CPF"))
-        cpf = re.sub(r'\D', '', cpf)
+        usuario = Usuarios.query.filter(Usuarios.id_usuario == session['user_id']).first()
+        usuario.typeUser = 3
+        session['typeUser'] = usuario.typeUser
+
         
         novo_Cliente = Cliente(cpf=cpf, dtNascimento = dtNascimento, nome = nome, telefone = telefone, genero = genero, carro = carro, id_usuario = session['user_id'])
         db.session.add(novo_Cliente)

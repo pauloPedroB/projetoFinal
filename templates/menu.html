@@ -8,6 +8,19 @@
 </head>
 <body>
     <header class="cabeçalho1">
+        <div class="options">
+            {% if typeUser == 1 %}
+                <a href="/auth/sair"><h4>Produtos</h4></a>
+            {% endif %}
+            {% if typeUser == 2 %}
+                <a href="/auth/sair"><h4>Produtos</h4></a>
+                <a href="/auth/sair"><h4>Meus Perfil</h4></a>
+            {% endif %}
+            {% if typeUser == 3 %}
+                <a href="/auth/sair"><h4>Meus Perfil</h4></a>
+            {% endif %}
+        </div>
+
         <div class="perfil">
             <h3> Bem vindo</h3>
             <a href="/auth/sair"><img src="https://cdn-icons-png.flaticon.com/512/6218/6218420.png" alt=""></a>

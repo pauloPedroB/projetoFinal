@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, session, redirect, url_for,jsonify
 from geopy.distance import geodesic
-import validacoes
+import services.validacoes as validacoes
 from classes import db, Endereco
 
 from routes.auth import auth_bp

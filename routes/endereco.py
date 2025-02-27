@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
-from classes import db,Endereco
+from classes import db,Endereco,Administrador
 import requests
 import re
 from geopy.geocoders import Nominatim, OpenCage
@@ -9,7 +9,7 @@ from geopy.distance import geodesic
 
 endereco_bp = Blueprint('endereco', __name__)
 
-import validacoes
+import services.validacoes as validacoes
 
 @endereco_bp.route('/cadastro')
 def cadastro():
@@ -19,7 +19,7 @@ def cadastro():
     verificarLojaCliente = validacoes.verificarLojaCliente()
     if verificarLojaCliente:
         return verificarLojaCliente
-    if Endereco.query.filter_by(id_usuario=session['user_id']).first():
+    if Endereco.query.filter_by(id_usuario=session['user_id']).first() or Administrador.query.filter_by(id_usuario=session['user_id']).first():
         return redirect(url_for('menu.principal'))
     erro = request.args.get('erro')
     if erro == None:
@@ -38,7 +38,7 @@ def cadastrar():
         if verificarLojaCliente:
             return verificarLojaCliente
         
-        if Endereco.query.filter_by(id_usuario=session['user_id']).first():
+        if Endereco.query.filter_by(id_usuario=session['user_id']).first() or Administrador.query.filter_by(id_usuario=session['user_id']).first():
             return redirect(url_for('menu.principal'))
         
         cep = request.form['CEP']
