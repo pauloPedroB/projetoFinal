@@ -65,7 +65,14 @@ id_usuario int not null,
 foreign key(id_usuario) references usuarios(id_usuario)
 );
 
-select * from usuarios;
+create table produtos(
+id_produto int auto_increment primary key,
+nome_produto varchar(100),
+img varchar(300)
+);
+
+select * from produtos;
+update usuarios set typeUser = 1 where id_usuario = 1;
 #insert into administradores (nome, id_usuario) values ("Pedro Paulo", 1);
 
 
