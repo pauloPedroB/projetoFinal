@@ -41,6 +41,54 @@
         </form>
 
     </main>
-    
+    <script>
+        document.querySelector("form").addEventListener("submit", function (e) {
+            let name = document.getElementById("name").value.trim();
+            let image = document.getElementById("imagem").files[0];
+            
+            let nameError = document.getElementById("nameError");
+            let imageError = document.getElementById("imagemError");
+        
+            // Resetando mensagens de erro
+            nameError.textContent = "";
+            imageError.textContent = "";
+        
+            let isValid = true;
+        
+            // Validação do nome
+            if (name.length < 3) {
+                nameError.textContent = "O nome deve ter pelo menos 3 caracteres.";
+                nameError.style.color = "red";
+                isValid = false;
+            }
+        
+            // Validação da imagem
+            if (!image) {
+                imageError.textContent = "A imagem é obrigatória.";
+                imageError.style.color = "red";
+                isValid = false;
+            } else {
+                let allowedExtensions = ["jpg", "jpeg", "png", "gif"];
+                let fileExtension = image.name.split(".").pop().toLowerCase();
+                if (!allowedExtensions.includes(fileExtension)) {
+                    imageError.textContent = "Formato inválido. Use JPG, JPEG, PNG ou GIF.";
+                    imageError.style.color = "red";
+                    isValid = false;
+                }
+        
+                if (image.size > 2 * 1024 * 1024) { // Limite de 2MB
+                    imageError.textContent = "O arquivo deve ter no máximo 2MB.";
+                    imageError.style.color = "red";
+                    isValid = false;
+                }
+            }
+        
+            // Se houver erro, impedir envio do formulário
+            if (!isValid) {
+                e.preventDefault();
+            }
+        });
+        </script>
+        
 </body>
 </html>

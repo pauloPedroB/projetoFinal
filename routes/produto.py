@@ -4,7 +4,7 @@ import os
 
 import services.validacoes as validacoes
 produto_bp = Blueprint('produto', __name__)
-
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 @produto_bp.route('/vizualizar')
 def produtos():
@@ -34,25 +34,35 @@ def cadastro():
     if session['typeUser'] != 1:
         return render_template('menu/menu.html', mensagem="Você não possuí acesso de administrador",typeUser = session['typeUser'])
         
-    mensagem = request.args.get('mensagem', "")
+    erro = request.args.get('erro', "")
 
 
-    return render_template('menu/criarProduto.html', erro=mensagem)
+    return render_template('menu/criarProduto.html', erro=erro)
 
 @produto_bp.route('/cadastrar',methods=['POST'])
 def cadastrar():
-    cadastro = validacoes.verificarCadastroCompleto()
-    if cadastro:
-        return cadastro
-    if session['typeUser'] != 1:
-        return render_template('menu/menu.html', mensagem="Você não possuí acesso de administrador",typeUser = session['typeUser'])
+    try:
+        cadastro = validacoes.verificarCadastroCompleto()
+        if cadastro:
+            return cadastro
+        if session['typeUser'] != 1:
+            return render_template('menu/menu.html', mensagem="Você não possuí acesso de administrador",typeUser = session['typeUser'])
+            
+        mensagem = request.args.get('mensagem', "")
+
+        nome = request.form['name']
+        file = request.files["imagem"]
+
+        if not nome or len(nome) < 3:
+            return redirect(url_for("produto.cadastro", erro = "Nome do produto inválido"))
+
+        if not file:
+            return redirect(url_for("produto.cadastro", erro = "Imagem é obrigatória"))
+
+
+        if not allowed_file(file.filename):
+            return redirect(url_for("produto.cadastro", erro = "Formato de imagem inválido. Use PNG, JPG ou JPEG."))
         
-    mensagem = request.args.get('mensagem', "")
-
-    nome = request.form['name']
-    file = request.files["imagem"]
-
-    if file:
         filename = file.filename
         # Salva o arquivo na pasta de uploads
         file.save(os.path.join(current_app.config["UPLOAD_FOLDER"], filename))
@@ -64,4 +74,12 @@ def cadastrar():
         db.session.add(novo_produto)
         db.session.commit()
 
-    return redirect(url_for('produto.produtos'))
+        return redirect(url_for('produto.produtos'))
+    except:
+        return redirect(url_for('produto.cadastro',erro = "Algo deu errado, tente novamente"))
+    
+
+def allowed_file(filename):
+    """Verifica se o arquivo tem uma extensão permitida"""
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+        

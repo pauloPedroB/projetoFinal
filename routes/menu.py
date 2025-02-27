@@ -17,7 +17,7 @@ def escolha():
         return verificarUsuario
     mensagem = request.args.get('menu/mensagem', "")
     
-    return render_template('clienteLoja.html', mensagem=mensagem)
+    return render_template('menu/clienteLoja.html', mensagem=mensagem)
 
 @menu_bp.route('/principal')
 def principal():
