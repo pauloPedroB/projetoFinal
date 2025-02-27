@@ -8,6 +8,8 @@ from routes.cliente import cliente_bp
 from routes.loja import loja_bp
 from routes.endereco import endereco_bp
 from routes.menu import menu_bp
+from routes.produto import produto_bp
+
 
 from services.email_service import email_service
 from services.apis import apis_bp
@@ -15,6 +17,9 @@ from services.apis import apis_bp
 
 
 app = Flask(__name__)
+
+UPLOAD_FOLDER = "static/uploads"
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:Victor%4012@localhost:3306/projetoAutomoveis'
 app.config['SECRET_KEY'] = 'Chave()1243123'
@@ -28,8 +33,7 @@ app.register_blueprint(email_service,url_prefix='/email')
 app.register_blueprint(apis_bp,url_prefix='/apis')
 app.register_blueprint(endereco_bp,url_prefix='/endereco')
 app.register_blueprint(menu_bp,url_prefix='/menu')
-
-
+app.register_blueprint(produto_bp,url_prefix='/produto')
 
 @app.route('/')
 def index():

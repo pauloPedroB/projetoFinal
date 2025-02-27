@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <header class="cabeçalho1">
+        <div class="options">
+  
+            <a href="/auth/sair"><h4>Menu</h4></a>
+
+        </div>
+
+        <div class="perfil">
+            <h3> Bem vindo</h3>
+            <a href="/auth/sair"><img src="https://cdn-icons-png.flaticon.com/512/6218/6218420.png" alt=""></a>
+        </div>
+        
+    </header>
+    {% if mensagem !="" %}
+    <div class="mensagem">
+        <h3>{{mensagem}}</h3>
+    </div>
+    {% endif %}
+    <a href="/produto/cadastro">Cadastrar Produtos</a>
+
+    <main class="corpo">
+        {% if produtos %}
+            {%for produto in produtos%}
+                <div class="opcao">
+                    <h2>{{produto.nome_produto}}</h2>
+                    <img src="{{ url_for('static', filename='uploads/' + produto.img) }}" alt="">
+                    <form action="/produto/editar">
+                        <input type="submit" value="Editar">
+                    </form>
+                    <form action="/produto/editar">
+                        <input type="submit" value="Exluir">
+                    </form>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+    </main>
+    
+</body>
+</html>

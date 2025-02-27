@@ -1,8 +1,10 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
-from classes import db,Loja,Usuarios,Cliente,Endereco,Administrador
+from classes import db,Loja,Usuarios,Cliente,Endereco,Administrador,Produto
 
 import services.validacoes as validacoes
 menu_bp = Blueprint('menu', __name__)
+
+
 
 @menu_bp.route('/escolha')
 def escolha():
@@ -13,7 +15,7 @@ def escolha():
     verificarUsuario = validacoes.verificarUsuario()
     if verificarUsuario:
         return verificarUsuario
-    mensagem = request.args.get('mensagem', "")
+    mensagem = request.args.get('menu/mensagem', "")
     
     return render_template('clienteLoja.html', mensagem=mensagem)
 
@@ -36,4 +38,8 @@ def principal():
     #else:
      #   dados = Cliente.query.filter_by(id_usuario=session['user_id']).first()
 
-    return render_template('menu.html', mensagem=mensagem,typeUser = session['typeUser'])
+    return render_template('menu/menu.html', mensagem=mensagem,typeUser = session['typeUser'])
+
+
+
+
