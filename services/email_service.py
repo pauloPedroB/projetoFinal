@@ -14,7 +14,7 @@ email_service = Blueprint('email', __name__)
 @email_service.route('/verificarEmail')
 def verificarEmail():
     if 'user_verificado' in session and session['user_verificado'] is not None:
-        return redirect(url_for('menu'))
+        return redirect(url_for('menu.principal'))
     mensagem = request.args.get('mensagem', "")
     return render_template('email.html', mensagem=mensagem)
 
@@ -23,9 +23,9 @@ def verificarEmail():
 def enviar():
     try:
         if 'user_verificado' in session and session['user_verificado'] is not None:
-            return redirect(url_for('menu'))
+            return redirect(url_for('menu.principal'))
         enviarEmail(1,session['user_id'],session['user_email'])
-        return redirect(url_for('menu'))
+        return redirect(url_for('menu.principal'))
     
     except:
         return redirect(url_for('auth.inicio'))
@@ -53,24 +53,25 @@ def validar(token):
 
         session['user_verificado'] = usuario.verificado
 
-        return redirect(url_for('menu'))
+        return redirect(url_for('menu.escolha'))
     except:
         return redirect(url_for('auth.inicio', erro="Algo deu errado ao procurar o seu token, repita o processo de recuperação"))
 
 
-def enviarEmail(metodo,id,email):
-
+def enviarEmail(metodo, id, email):
     id_token = gerar_token()
     horario = validacoes.horario_br()
-    novo_token = Tokens(id_token=id_token, id_user=id, dt_cr=horario,usado = False)
+    novo_token = Tokens(id_token=id_token, id_user=id, dt_cr=horario, usado=False)
     if metodo == 1:
-        if 'user_verificado' in session:
+        # Verifica se o usuário já foi verificado; somente retorna se o valor for diferente de None
+        if session.get('user_verificado') is not None:
             return None
-        enviar_validacao(email,novo_token.id_token)
+        enviar_validacao(email, novo_token.id_token)
     elif metodo == 2:
-        enviar_email_recuperacao(email,novo_token.id_token)
+        enviar_email_recuperacao(email, novo_token.id_token)
     db.session.add(novo_token)
     db.session.commit()
+
 
 def enviar_validacao(email,token):
     

@@ -46,7 +46,7 @@ def cadastrar():
         db.session.add(nova_loja)
         db.session.commit()
 
-        return redirect(url_for('menu'))
+        return redirect(url_for('endereco.cadastro'))
         
     except:
         return redirect(url_for('loja.cadastro',erro = "Algo deu errado, tente novamente"))

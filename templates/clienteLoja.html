@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastre-se como Cliente ou Loja</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <header class="cabeçalho1">
+        <div class="perfil">
+            <h3> Bem vindo</h3>
+            <a href="/auth/sair"><img src="https://cdn-icons-png.flaticon.com/512/6218/6218420.png" alt=""></a>
+        </div>
+        
+    </header>
+    {% if mensagem !="" %}
+    <div class="mensagem">
+        <h3>{{mensagem}}</h3>
+    </div>
+    {% endif %}
+
+    <main class="corpo">
+        <h1>Deseja se cadastrar como Cliente ou Loja?</h1>
+        <div class="opcao">
+            <h2>CLIENTE</h2>
+            <a href="/cliente/cadastro"><img src="https://cdn-icons-png.flaticon.com/512/6421/6421323.png" alt=""></a>
+
+        </div>
+        <div class="opcao">
+            <h2>LOJA</h2>
+            <a href="/loja/cadastro"><img src="https://cdn-icons-png.flaticon.com/128/1374/1374209.png" alt=""></a>
+        </div>
+
+
+    </main>
+    
+</body>
+</html>

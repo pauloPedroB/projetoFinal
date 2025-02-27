@@ -12,7 +12,7 @@ auth_bp = Blueprint('auth', __name__)
 # Função auxiliar para verificar login
 def verificarLog():
     if 'user_id' in session:
-        return redirect(url_for('menu'))
+        return redirect(url_for('menu.principal'))
     return None
 
 
@@ -71,7 +71,7 @@ def cadastrar():
 
         enviarEmail(1, session['user_id'], session['user_email'])
         
-        return redirect(url_for('menu'))
+        return redirect(url_for('menu.escolha'))
 
     except:
         return redirect(url_for('auth.cadastro', erro="Erro ao tentar se cadastrar"))
@@ -92,7 +92,7 @@ def entrar():
                 session['user_email'] = usuario.email_usuario
                 session['user_verificado'] = usuario.verificado
 
-                return redirect(url_for('menu'))
+                return redirect(url_for('menu.principal'))
 
             return redirect(url_for('auth.inicio', erro='Senha incorreta'))
         return redirect(url_for('auth.inicio', erro='Usuário não encontrado'))

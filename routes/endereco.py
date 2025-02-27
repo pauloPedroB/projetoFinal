@@ -13,22 +13,34 @@ import validacoes
 
 @endereco_bp.route('/cadastro')
 def cadastro():
-    
     verificar = validacoes.verificarCadastro()
     if verificar:
         return verificar
     verificarLojaCliente = validacoes.verificarLojaCliente()
     if verificarLojaCliente:
         return verificarLojaCliente
-     
+    if Endereco.query.filter_by(id_usuario=session['user_id']).first():
+        return redirect(url_for('menu.principal'))
     erro = request.args.get('erro')
     if erro == None:
         erro = ""
     return render_template('cadastroEnd.html',erro = erro)
 
+
 @endereco_bp.route('/cadastrar',methods=['POST'])
 def cadastrar():
-
+    try:
+        verificar = validacoes.verificarCadastro()
+        if verificar:
+            return verificar
+        
+        verificarLojaCliente = validacoes.verificarLojaCliente()
+        if verificarLojaCliente:
+            return verificarLojaCliente
+        
+        if Endereco.query.filter_by(id_usuario=session['user_id']).first():
+            return redirect(url_for('menu.principal'))
+        
         cep = request.form['CEP']
         rua = request.form['rua']
         numero = request.form['numero']
@@ -37,13 +49,6 @@ def cadastrar():
         cidade = request.form['cidade']
         complemento = request.form['complemento']
         
-        verificar = validacoes.verificarCadastro()
-        if verificar:
-            return verificar
-        
-        verificarLojaCliente = validacoes.verificarLojaCliente()
-        if verificarLojaCliente:
-            return verificarLojaCliente
         
         if(Endereco.query.filter_by(id_usuario = session['user_id']).first()):
             return redirect(url_for('endereco.cadastro',erro = "Já existe um endereço vinculado à esse usuário, se precisa atualizar esse endereço, atualize-o na página de perfil"))
@@ -54,7 +59,10 @@ def cadastrar():
         novo_Endereco = Endereco(cep=mensagem[0], nmr = mensagem[1], complemento = mensagem[2], rua = mensagem[3], cidade = mensagem[4], uf = mensagem[5],bairro = mensagem[6],latitude = mensagem[7],longitude = mensagem[8], id_usuario = session['user_id'])
         db.session.add(novo_Endereco)
         db.session.commit()
-        return redirect(url_for('menu'))
+        return redirect(url_for('menu.principal'))
+    except:
+        return redirect(url_for('endereco.cadastro', erro = "Algo deu errado, tente novamente"))
+
 
        
 
@@ -65,7 +73,6 @@ def cadastrar():
 def validar_endereco(cep, numero, complemento, rua, cidade, uf,bairro):
     MAX_RUA_LENGTH = 65
     MAX_CIDADE_LENGTH = 40
-    MAX_CEP_LENGTH = 8
     MAX_COMPLEMENTO_LENGTH = 200
     MAX_UF_LENGTH = 2
     

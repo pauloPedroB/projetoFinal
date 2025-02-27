@@ -12,6 +12,20 @@ from classes import Loja,Cliente,Endereco
 from flask import session,redirect,url_for
 
 
+def verificarCadastroCompleto():
+    cadastro = verificarCadastro()
+    if cadastro:
+        return cadastro  # Se precisar redirecionar, retorna imediatamente
+    
+    lojaCliente = verificarLojaCliente()
+    if lojaCliente:
+        return lojaCliente  # Se precisar redirecionar, retorna imediatamente
+    
+    endereco = verificarEndereco()
+    if endereco:
+        return endereco  # Se precisar redirecionar, retorna imediatamente
+    
+    return None  # Se todas as verificações passarem, retorna None explicitamente
 
 def verificarCadastro():
     if 'user_id' not in session:
@@ -20,22 +34,27 @@ def verificarCadastro():
     if 'user_verificado' not in session or session['user_verificado'] is None:
         return redirect(url_for('email.verificarEmail'))
 
-    return None
+    return None  # Adicionado para garantir um retorno explícito
 
 def verificarLojaCliente():
     if Loja.query.filter_by(id_usuario=session['user_id']).first() is None and Cliente.query.filter_by(id_usuario=session['user_id']).first() is None:
-        return redirect(url_for('menu',mensagem = "Cadastre-se como cliente ou loja"))
-        
+        return redirect(url_for('menu.escolha', mensagem="Cadastre-se como cliente ou loja"))
+    
+    return None  # Adicionado para evitar retorno implícito de None
 
 def verificarUsuario():
-    if(Loja.query.filter_by(id_usuario=session['user_id']).first()):
-        return redirect(url_for('menu',mensagem = "Esse Usuário já está vinculado a uma loja"))
-    elif(Cliente.query.filter_by(id_usuario=session['user_id']).first()):
-        return redirect(url_for('menu',mensagem = "Esse Usuário já possuí cadastro como Cliente"))
+    if Loja.query.filter_by(id_usuario=session['user_id']).first():
+        return redirect(url_for('menu.principal', mensagem="Esse Usuário já está vinculado a uma loja"))
+    elif Cliente.query.filter_by(id_usuario=session['user_id']).first():
+        return redirect(url_for('menu.principal', mensagem="Esse Usuário já possuí cadastro como Cliente"))
+
+    return None  # Adicionado para evitar retorno implícito de None
 
 def verificarEndereco():
-    if(Endereco.query.filter_by(id_usuario = session['user_id']).first() is None):
+    if Endereco.query.filter_by(id_usuario=session['user_id']).first() is None:
         return redirect(url_for('endereco.cadastro'))
+    
+    return None  # Adicionado para garantir um retorno explícito
 
 
 def validar_email(email):

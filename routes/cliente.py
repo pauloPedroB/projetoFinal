@@ -46,7 +46,7 @@ def cadastrar():
         novo_Cliente = Cliente(cpf=cpf, dtNascimento = dtNascimento, nome = nome, telefone = telefone, genero = genero, carro = carro, id_usuario = session['user_id'])
         db.session.add(novo_Cliente)
         db.session.commit()
-        return redirect(url_for('menu'))
+        return redirect(url_for('endereco.cadastro'))
     
     except:
         return redirect(url_for('cliente.cadastro',erro = "Algo deu errado, tente novamente"))

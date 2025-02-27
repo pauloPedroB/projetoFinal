@@ -7,13 +7,16 @@ from routes.auth import auth_bp
 from routes.cliente import cliente_bp
 from routes.loja import loja_bp
 from routes.endereco import endereco_bp
+from routes.menu import menu_bp
+
 from services.email_service import email_service
 from services.apis import apis_bp
 
 
+
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://aluno:toor@localhost:3306/projetoAutomoveis'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:Victor%4012@localhost:3306/projetoAutomoveis'
 app.config['SECRET_KEY'] = 'Chave()1243123'
 
 db.init_app(app)
@@ -24,26 +27,15 @@ app.register_blueprint(loja_bp, url_prefix='/loja')
 app.register_blueprint(email_service,url_prefix='/email')
 app.register_blueprint(apis_bp,url_prefix='/apis')
 app.register_blueprint(endereco_bp,url_prefix='/endereco')
+app.register_blueprint(menu_bp,url_prefix='/menu')
+
 
 
 @app.route('/')
 def index():
     return redirect(url_for('auth.inicio'))
 
-@app.route('/menu')
-def menu():
-    verificar = validacoes.verificarCadastro()
-    if verificar:  
-        return verificar
-    
-        
-    verificarEnd = validacoes.verificarEndereco()
-    if verificarEnd:
-        return verificarEnd
-    
-    mensagem = request.args.get('mensagem', "")
-    
-    return render_template('menu.html', mensagem=mensagem)
+
 
 @app.route('/buscar_cep', methods=['GET'])
 def buscar_cep():
