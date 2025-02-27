@@ -108,5 +108,10 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!valid) {
             event.preventDefault();
         }
+        document.getElementById('rua').disabled = false;
+        document.getElementById('bairro').disabled = false;
+        document.getElementById('cidade').disabled = false;
+        document.getElementById('uf').disabled = false;
+        
     });
 });

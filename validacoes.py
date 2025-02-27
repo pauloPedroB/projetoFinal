@@ -93,18 +93,6 @@ def horario_br():
     return datetime.now(fuso_horario_brasilia)
 
 
-def consultar_cep(cep):
-    url = f"https://viacep.com.br/ws/{cep}/json/"
-    response = requests.get(url)
-    
-    if response.status_code == 200:
-        dados = response.json()
-        if "erro" not in dados:
-            return True, dados
-        else:
-            return False, "Cep Não encontrado"
-    else:
-        return False,"Erro na requisição."
 
 
 

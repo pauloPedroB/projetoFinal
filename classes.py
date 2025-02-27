@@ -21,6 +21,7 @@ class Endereco(db.Model):
     __tablename__ = 'enderecos'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     rua = db.Column(db.String(65), nullable=False)
+    bairro = db.Column(db.String(40), nullable=False)
     cidade = db.Column(db.String(40), nullable=False)
     cep = db.Column(db.String(8),unique = True, nullable=False)
     complemento = db.Column(db.String(200), nullable=False)

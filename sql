@@ -9,13 +9,13 @@ pass_usuario varchar(300) not null,
 verificado datetime
 );
 
-select * from usuarios;
 
 create table enderecos(
 id int auto_increment primary key,
 cep char(8) unique,
 rua varchar(65),
 nmr int,
+bairro varchar(40),
 cidade varchar(40),
 uf char(2),
 complemento varchar(200),
@@ -56,6 +56,5 @@ carro int not null,
 id_usuario int not null,
 foreign key(id_usuario) references usuarios(id_usuario)
 );
-
-update usuarios set verificado = "20250206" where id_usuario = 1;
+select * from clientes;
 
