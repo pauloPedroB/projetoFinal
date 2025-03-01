@@ -71,6 +71,13 @@ nome_produto varchar(100),
 img varchar(300)
 );
 
+create table produto_loja(
+id_produto int,
+id_loja int,
+foreign key(id_produto) references produtos(id_produto),
+foreign key(id_loja) references lojas(id_loja)
+);
+
 select * from produtos;
 #update usuarios set typeUser = 1 where id_usuario = 1;
 #insert into administradores (nome, id_usuario) values ("Pedro", 1);
