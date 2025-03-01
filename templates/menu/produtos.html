@@ -33,7 +33,7 @@
                 <div class="opcao">
                     <h2>{{produto.nome_produto}}</h2>
                     <img src="{{ url_for('static', filename='uploads/' + produto.img) }}" alt="">
-                    <form action="/produto/editar">
+                    <form action="/produto/editar/{{produto.id_produto}}" method="post">
                         <input type="submit" value="Editar">
                     </form>
                     <form action="/produto/excluir/{{produto.id_produto}}" method="post">

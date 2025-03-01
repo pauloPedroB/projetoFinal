@@ -39,6 +39,7 @@ def verificarLojaCliente():
     usuario = Usuarios.query.filter(Usuarios.id_usuario == session['user_id']).first()
     if usuario.typeUser == None:
         return redirect(url_for('menu.escolha', mensagem="Cadastre-se como cliente ou loja"))
+    session['typeUser'] = usuario.typeUser
     
     return None  # Adicionado para evitar retorno implícito de None
 

@@ -72,7 +72,7 @@ img varchar(300)
 );
 
 select * from produtos;
-update usuarios set typeUser = 1 where id_usuario = 1;
-#insert into administradores (nome, id_usuario) values ("Pedro Paulo", 1);
+#update usuarios set typeUser = 1 where id_usuario = 1;
+#insert into administradores (nome, id_usuario) values ("Pedro", 1);
 
 

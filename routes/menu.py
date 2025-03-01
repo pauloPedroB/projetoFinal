@@ -38,6 +38,8 @@ def principal():
     #else:
      #   dados = Cliente.query.filter_by(id_usuario=session['user_id']).first()
 
+
+        
     return render_template('menu/menu.html', mensagem=mensagem,typeUser = session['typeUser'])
 
 

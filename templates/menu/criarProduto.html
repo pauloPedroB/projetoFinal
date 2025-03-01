@@ -9,6 +9,7 @@
 <body>
     <header class="cabeçalho1">
         <div class="options">
+            <a href="/produto/produtos"><h4>Produtos</h4></a>
             <a href="/menu/principal"><h4>Menu</h4></a>
         </div>
 
@@ -16,8 +17,8 @@
             <h3> Bem vindo</h3>
             <a href="/auth/sair"><img src="https://cdn-icons-png.flaticon.com/512/6218/6218420.png" alt=""></a>
         </div>
-        
     </header>
+
     {% if mensagem !="" %}
     <div class="mensagem">
         <h3>{{mensagem}}</h3>
@@ -25,49 +26,86 @@
     {% endif %}
 
     <main class="corpo">
-        <h1>Cadastrar Produto</h1>
-        <form action="{{ url_for('produto.cadastrar') }}" method="POST" enctype="multipart/form-data">
+        <h1>{% if produto %}Editar{% else %}Cadastrar{% endif %} Produto</h1>
 
-            <h3>{{erro}}</h3>
+        <form 
+            {% if not produto %} action="{{ url_for('produto.cadastrar') }}" 
+            {% else %} action="{{ url_for('produto.update', id=produto.id_produto) }}" 
+            {% endif %} 
+            method="POST" enctype="multipart/form-data">
+
+            <h3>{{ erro }}</h3>
+
             <label for="nome">Nome Completo</label>
             <span class="error-message" id="nameError"></span>
-            <input type="text" id="name" name="name">
+            <input type="text" id="name" name="name" {% if produto %} value="{{ produto.nome_produto }}" {% endif %}>
+
+            {% if produto %}
+                <div id="preview-container">
+                    <p>Imagem Atual:</p>
+                    <img id="preview" src="{{ url_for('static', filename='uploads/' + produto.img) }}" 
+                        alt="Imagem do Produto" width="150">
+                    <!-- Input escondido para armazenar a imagem existente -->
+                    <input type="hidden" name="imagem_existente" value="{{ produto.img }}">
+                </div>
+            {% else %}
+                <div id="preview-container" style="display: none;">
+                    <p>Prévia da Imagem:</p>
+                    <img id="preview" src="" alt="Prévia" width="150">
+                </div>
+            {% endif %}
 
             <label for="imagem">Selecione Uma Imagem</label>
             <span class="error-message" id="imagemError"></span>
-            <input type="file" name="imagem" id="imagem"required>
+            <input type="file" name="imagem" id="imagem" {% if not produto %}required{% endif %}>
 
-            <input type="submit" value="Cadastrar Produto">
+            <input type="submit" value="{% if not produto %}Cadastrar{% else %}Editar{% endif %} Produto">
         </form>
-
     </main>
+
     <script>
+        document.getElementById("imagem").addEventListener("change", function (event) {
+            let preview = document.getElementById("preview");
+            let previewContainer = document.getElementById("preview-container");
+            let file = event.target.files[0];
+
+            if (file) {
+                let reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.src = e.target.result;
+                    previewContainer.style.display = "block"; // Mostrar a prévia
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
         document.querySelector("form").addEventListener("submit", function (e) {
             let name = document.getElementById("name").value.trim();
             let image = document.getElementById("imagem").files[0];
-            
+            let existingImage = document.querySelector("input[name='imagem_existente']"); // Verifica se há imagem salva
+
             let nameError = document.getElementById("nameError");
             let imageError = document.getElementById("imagemError");
-        
+
             // Resetando mensagens de erro
             nameError.textContent = "";
             imageError.textContent = "";
-        
+
             let isValid = true;
-        
+
             // Validação do nome
             if (name.length < 3) {
                 nameError.textContent = "O nome deve ter pelo menos 3 caracteres.";
                 nameError.style.color = "red";
                 isValid = false;
             }
-        
-            // Validação da imagem
-            if (!image) {
+
+            // Validação da imagem apenas se não houver uma cadastrada
+            if (!image && !existingImage.value) {
                 imageError.textContent = "A imagem é obrigatória.";
                 imageError.style.color = "red";
                 isValid = false;
-            } else {
+            } else if (image) {
                 let allowedExtensions = ["jpg", "jpeg", "png", "gif"];
                 let fileExtension = image.name.split(".").pop().toLowerCase();
                 if (!allowedExtensions.includes(fileExtension)) {
@@ -75,20 +113,19 @@
                     imageError.style.color = "red";
                     isValid = false;
                 }
-        
+
                 if (image.size > 2 * 1024 * 1024) { // Limite de 2MB
                     imageError.textContent = "O arquivo deve ter no máximo 2MB.";
                     imageError.style.color = "red";
                     isValid = false;
                 }
             }
-        
+
             // Se houver erro, impedir envio do formulário
             if (!isValid) {
                 e.preventDefault();
             }
         });
-        </script>
-        
+    </script>
 </body>
 </html>
