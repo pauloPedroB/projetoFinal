@@ -51,11 +51,14 @@ def verificarUsuario():
     return None
 
 def verificarEndereco():
-    if Endereco.query.filter_by(id_usuario=session['user_id']).first() is None:
+    endereco = Endereco.query.filter_by(id_usuario=session['user_id']).first()
+    if not endereco:
         if Administrador.query.filter_by(id_usuario=session['user_id']).first() is None:
             return redirect(url_for('endereco.cadastro'))
         return None
-    
+    session["lat"] = endereco.latitude
+    session["long"] = endereco.longitude
+
     return None  # Adicionado para garantir um retorno explícito
 
 

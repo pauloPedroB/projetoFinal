@@ -24,13 +24,13 @@ def produtos():
             loja = Loja.query.filter_by(id_usuario=session['user_id']).first()
 
             produtos_loja = (
-                db.session.query(Produto)
+                db.session.query(Produto,Produto_Loja)
                 .join(Produto_Loja, Produto.id_produto == Produto_Loja.id_produto)
                 .join(Loja, Produto_Loja.id_loja == loja.id_loja)
                 .all()
             )
 
-        return render_template('menu/produtos.html', mensagem=mensagem,produtos = [produtos,produtos_loja],typeUser = session['typeUser'])
+        return render_template('menu/produtos.html', mensagem=mensagem,produtos = produtos, produtos_loja = produtos_loja,typeUser = session['typeUser'])
     except:
         return redirect(url_for('menu.principal',mensagem = "Algo deu errado, tente novamente"))
 
@@ -41,8 +41,8 @@ def vizualizar(id):
         if cadastro:
             return cadastro
         
-        if session['typeUser'] != 1:
-            return redirect(url_for('menu.principal',mensagem = "Você não possuí acesso de administrador"))
+        if session['typeUser'] != 1 and session['typeUser'] != 2:
+            return redirect(url_for('menu.principal',mensagem = "Você não possuí acesso a essa página"))
 
         mensagem = request.args.get('mensagem', "")
         produto = Produto.query.get(id)

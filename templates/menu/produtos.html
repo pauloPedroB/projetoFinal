@@ -29,7 +29,7 @@
     {% endif %}
     <main class="corpo">
         {% if produtos %}
-            {%for produto in produtos[0]%}
+            {%for produto in produtos%}
                 <div class="opcao">
                     <a href="/produto/vizualizar/{{produto.id_produto}}">
                         <h2>{{produto.nome_produto}}</h2>
@@ -50,15 +50,17 @@
                 </div>
             {% endfor %}
         {% endif %}
-        {% if produtos[1] != None%}
+        {% if produtos_loja != None%}
                 <h4>Meus Produtos</h4>
-            {%for produto in produtos[1]%}
+            {% for produto, produto_loja in produtos_loja %}
                 <div class="opcao">
-                    <h2>{{produto.nome_produto}}</h2>
-                    <img src="{{ url_for('static', filename='uploads/' + produto.img) }}" alt="">
-                    <form action="/loja/desvincular/{{produto.id_produto}}" method="post">
-                        <input type="submit" value="Desvincular" style="background-color: red;">
-                    </form>
+                    <a href="/loja/produto/{{produto_loja.id_produto_loja}}">
+                        <h2>{{produto.nome_produto}}</h2>
+                        <img src="{{ url_for('static', filename='uploads/' + produto.img) }}" alt="">
+                        <form action="/loja/desvincular/{{produto.id_produto}}" method="post">
+                            <input type="submit" value="Desvincular" style="background-color: red;">
+                        </form>
+                    </a>
                 </div>
             {% endfor %}
         {% endif %}

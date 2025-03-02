@@ -28,6 +28,9 @@
     <main class="corpo">
        <img src="{{ url_for('static', filename='uploads/' + produto.img) }}" alt="">
        <h2>{{produto.nome_produto}}</h2>
+       {% if loja[0] and loja[2] != None%}
+            <h1>Distancia{{loja[2]}}</h1>
+       {%endif%}
     </main>
     
 </body>
