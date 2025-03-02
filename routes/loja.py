@@ -129,10 +129,7 @@ def produto(id_produto):
         verificar = validacoes.verificarCadastroCompleto()
         if verificar:
             return verificar
-        
-        typeUser = session['typeUser']
-    
-        
+                
         mensagem = request.args.get('mensagem')
         if mensagem == None:
             mensagem = ""
@@ -153,6 +150,6 @@ def produto(id_produto):
             long = session['long']
             distancia = geodesic((float(endereco_loja.latitude), float(endereco_loja.longitude)),
                                     (float(lat), float(long))).km
-
+            distancia = round(distancia, 2)
         
         return render_template('menu/vizualizarProduto.html', mensagem=mensagem,produto = produto,loja = [loja,endereco_loja,distancia,endereco_user])

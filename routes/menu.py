@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
-from classes import db,Loja,Usuarios,Cliente,Endereco,Administrador,Produto
-
+from classes import db,Loja,Usuarios,Cliente,Endereco,Administrador,Produto,Produto_Loja
+from sqlalchemy import func
 import services.validacoes as validacoes
 menu_bp = Blueprint('menu', __name__)
 
@@ -22,25 +22,52 @@ def escolha():
 @menu_bp.route('/principal')
 def principal():
     try:
-
         cadastro = validacoes.verificarCadastroCompleto()
         if cadastro:
             return cadastro
-        
+        typeUser = session['typeUser']
         mensagem = request.args.get('mensagem', "")
+        pesquisa = request.args.get('pesquisa',"")
+        R = 6371
+        distancia = None
+        if pesquisa != "" and typeUser != 1: 
+            distancia = func.round(  
+                R * func.acos(
+                    func.cos(func.radians(session["lat"])) * func.cos(func.radians(Endereco.latitude)) *
+                    func.cos(func.radians(Endereco.longitude) - func.radians(session["long"])) +
+                    func.sin(func.radians(session["lat"])) * func.sin(func.radians(Endereco.latitude))
+                ),
+                2  
+            ).label("distancia")
 
-        
-        #dados = []
-        #if session['typeUser'] == 1:
-        #   dados = Administrador.query.filter_by(id_usuario=session['user_id']).first()
-        #elif session['typeUser']:
-        #   dados = Loja.query.filter_by(id_usuario=session['user_id']).first()
-        #else:
-        #   dados = Cliente.query.filter_by(id_usuario=session['user_id']).first()
-
-
+            produtos_lojas = db.session.query(
+                Produto_Loja, Loja, Produto, Endereco, distancia
+            ) \
+                .join(Loja, Produto_Loja.id_loja == Loja.id_loja) \
+                .join(Produto, Produto_Loja.id_produto == Produto.id_produto) \
+                .join(Endereco, Endereco.id_usuario == Loja.id_usuario) \
+                .filter(Produto.nome_produto.ilike(f"%{pesquisa}%")) \
+                .order_by(distancia).limit(20) \
+                .all()
+        elif pesquisa != "": 
+            produtos_lojas = db.session.query(
+                Produto_Loja, Loja, Produto
+            ) \
+                .join(Loja, Produto_Loja.id_loja == Loja.id_loja) \
+                .join(Produto, Produto_Loja.id_produto == Produto.id_produto) \
+                .filter(Produto.nome_produto.ilike(f"%{pesquisa}%")) \
+                .limit(20) \
+                .all()
+        else:
+             produtos_lojas = db.session.query(Produto_Loja, Loja, Produto) \
+            .join(Loja, Produto_Loja.id_loja == Loja.id_loja) \
+            .join(Produto, Produto_Loja.id_produto == Produto.id_produto) \
+            .order_by(func.random()) \
+            .limit(20) \
+            .all()
             
-        return render_template('menu/menu.html', mensagem=mensagem,typeUser = session['typeUser'])
+        return render_template('menu/menu.html', mensagem=mensagem,typeUser = session['typeUser'],produtos_lojas = produtos_lojas,pesquisa = pesquisa)
+
     except Exception as e:
         session.clear()
         return redirect(url_for('auth.inicio',mensagem = f"Erro ao acessar o Sistema {e}"))

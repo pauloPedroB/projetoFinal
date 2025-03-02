@@ -32,17 +32,23 @@
         <h3>{{mensagem}}</h3>
     </div>
     {% endif %}
-
+    <form action="/menu/principal" method="get">
+        <input type="text" placeholder="Pesquisar..." id="pesquisa" name="pesquisa">
+    </form>
     <main class="corpo">
-        <div class="opcao">
-            <h2>CLIENTE</h2>
-            <a href="/cliente/cadastro"><img src="https://cdn-icons-png.flaticon.com/512/6421/6421323.png" alt=""></a>
 
-        </div>
-        <div class="opcao">
-            <h2>LOJA</h2>
-            <a href="/loja/cadastro"><img src="https://cdn-icons-png.flaticon.com/128/1374/1374209.png" alt=""></a>
-        </div>
+        {% for produto_loja in produtos_lojas %}
+            
+                <div class="opcao">
+                    <a href="/loja/produto/{{produto_loja.Produto_Loja.id_produto_loja}}">
+                        <h2>{{produto_loja.Produto.nome_produto}}</h2>
+                        <img src="{{ url_for('static', filename='uploads/' + produto_loja.Produto.img) }}" alt="">
+                        {%if typeUser != 1 and pesquisa != ""%}
+                            <h4>Distância: {{produto_loja.distancia}} km</h4>
+                        {%endif%}
+                    </a>
+                </div>
+        {% endfor %}
 
 
     </main>
