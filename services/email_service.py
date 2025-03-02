@@ -55,7 +55,7 @@ def validar(token):
 
         return redirect(url_for('menu.escolha'))
     except:
-        return redirect(url_for('auth.inicio', erro="Algo deu errado ao procurar o seu token, repita o processo de recuperação"))
+        return redirect(url_for('auth.inicio', mensagem="Algo deu errado ao procurar o seu token, repita o processo de recuperação"))
 
 
 def enviarEmail(metodo, id, email):

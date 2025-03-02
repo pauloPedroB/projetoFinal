@@ -72,6 +72,7 @@ img varchar(300)
 );
 
 create table produto_loja(
+id_produto_loja int auto_increment primary key,
 id_produto int,
 id_loja int,
 foreign key(id_produto) references produtos(id_produto),

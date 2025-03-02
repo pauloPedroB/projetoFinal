@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
-from classes import db,Loja,Usuarios
+from classes import db,Loja,Usuarios,Produto,Produto_Loja
 import re
 import services.validacoes as validacoes
 
@@ -7,18 +7,21 @@ loja_bp = Blueprint('loja', __name__)
 
 @loja_bp.route('/cadastro')
 def cadastro():
-    
-    verificar = validacoes.verificarCadastro()
-    if verificar:
-        return verificar
-    verificarLojaCliente = validacoes.verificarUsuario()
-    if verificarLojaCliente:
-        return verificarLojaCliente
-    
-    erro = request.args.get('erro')
-    if erro == None:
-        erro = ""
-    return render_template('cadastroLoja.html',erro = erro)
+    try:
+        verificar = validacoes.verificarCadastro()
+        if verificar:
+            return verificar
+        verificarUsuario = validacoes.verificarUsuario()
+        if verificarUsuario:
+            return verificarUsuario
+        
+        mensagem = request.args.get('mensagem')
+        if mensagem == None:
+            mensagem = ""
+        return render_template('cadastroLoja.html',mensagem = mensagem)
+    except:
+        return redirect(url_for('menu.escolha',mensagem = "Algo deu errado, tente novamente"))
+
 
 @loja_bp.route('/cadastrar',methods=['POST'])
 def cadastrar():
@@ -26,9 +29,10 @@ def cadastrar():
         verificar = validacoes.verificarCadastro()
         if verificar:
             return verificar
-        verificarLojaCliente = validacoes.verificarUsuario()
-        if verificarLojaCliente:
-            return verificarLojaCliente
+        verificarUsuario = validacoes.verificarUsuario()
+        if verificarUsuario:
+            return verificarUsuario
+        
         cnpj_user = request.form['CNPJ']
         nomeFantasia = request.form['nomeFantasia']
         razaoSocial = request.form['razaoSocial']
@@ -39,9 +43,9 @@ def cadastrar():
 
         cadastro,mensagem = validacoes.validar_cadastroLoja(cnpj_user,nomeFantasia,razaoSocial,telefone,celular,abertura)
         if cadastro == False:
-            return redirect(url_for('loja.cadastro',erro = mensagem))
+            return redirect(url_for('loja.cadastro',mensagem = mensagem))
         elif(Loja.query.filter_by(cnpj=cnpj_user).first()):
-            return redirect(url_for('loja.cadastro',erro = "Já possuí uma loja vinculada com esse CNPJ"))
+            return redirect(url_for('loja.cadastro',mensagem = "Já possuí uma loja vinculada com esse CNPJ"))
         usuario = Usuarios.query.filter(Usuarios.id_usuario == session['user_id']).first()
         usuario.typeUser = 2
         session['typeUser'] = usuario.typeUser
@@ -53,5 +57,40 @@ def cadastrar():
         return redirect(url_for('endereco.cadastro'))
         
     except:
-        return redirect(url_for('loja.cadastro',erro = "Algo deu errado, tente novamente"))
+        return redirect(url_for('loja.cadastro',mensagem = "Algo deu errado, tente novamente"))
 
+@loja_bp.route('/vincular/<id_produto>',methods=['POST'])
+def vincular(id_produto):
+    try:
+        verificar = validacoes.verificarCadastro()
+        if verificar:
+            return verificar
+        verificarLojaCliente = validacoes.verificarLojaCliente()
+        if verificarLojaCliente:
+            return verificarLojaCliente
+        
+        typeUser = session['typeUser']
+        if typeUser != 2:
+            return redirect(url_for('menu.principal',mensagem = "Você não possuí acesso a essa página"))
+        
+        mensagem = request.args.get('mensagem')
+        if mensagem == None:
+            mensagem = ""
+        loja = Loja.query.filter_by(id_usuario=session['user_id']).first()
+        if not loja:
+            return redirect(url_for('produto.produtos',mensagem = "Loja não encontrada"))
+        produto = Produto.query.get(id_produto)
+        if not produto:
+            return redirect(url_for('produto.produtos',mensagem = "Produto não encontrado"))
+        
+        produto_loja = Produto_Loja.query.filter_by(id_produto = produto.id_produto, id_loja = loja.id_loja).first()
+        if produto_loja:
+            return redirect(url_for('produto.produtos',mensagem = "Esse produto Já foi vinculado à sua loja anteriormente"))
+
+        novo_produto_loja = Produto_Loja(id_produto = id_produto, id_loja = loja.id_loja)
+        db.session.add(novo_produto_loja)
+        db.session.commit()
+        
+        return redirect(url_for('produto.produtos',mensagem = "Produto vinculado a sua Loja"))
+    except:
+        return redirect(url_for('produto.produtos',mensagem = "Algo deu errado, tente novamente"))

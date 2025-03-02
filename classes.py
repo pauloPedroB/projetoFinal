@@ -79,7 +79,7 @@ class Cliente(db.Model):
     id_usuario = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), nullable=False)
 
     def __repr__(self):
-        return f'<Cliente {self.cnpj}>'
+        return f'<Cliente {self.cpf}>'
 
 class Administrador(db.Model):
     __tablename__ = 'administradores'
@@ -90,7 +90,7 @@ class Administrador(db.Model):
     id_usuario = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), nullable=False)
 
     def __repr__(self):
-        return f'<Administrador {self.cnpj}>'
+        return f'<Administrador {self.id_adm}>'
 
 class Produto(db.Model):
     __tablename__ = 'produtos'
@@ -101,5 +101,16 @@ class Produto(db.Model):
 
 
     def __repr__(self):
-        return f'<Produto {self.cnpj}>'
+        return f'<Produto {self.id_produto}>'
+
+class Produto_Loja(db.Model):
+    __tablename__ = 'produto_loja'
+
+    id_produto_loja = db.Column(db.Integer, primary_key=True, autoincrement=True)
+
+    id_produto = db.Column(db.Integer, db.ForeignKey('produtos.id_produto'), nullable=False)
+    id_loja = db.Column(db.Integer, db.ForeignKey('lojas.id_loja'), nullable=False)
+
+    def __repr__(self):
+        return f'<Produto Loja {self.id_produto_loja}>'
 

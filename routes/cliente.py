@@ -15,10 +15,10 @@ def cadastro():
     if verificarLojaCliente:
         return verificarLojaCliente
     
-    erro = request.args.get('erro')
-    if erro == None:
-        erro = ""
-    return render_template('cadastroCliente.html',erro = erro)
+    mensagem = request.args.get('mensagem')
+    if mensagem == None:
+        mensagem = ""
+    return render_template('cadastroCliente.html',mensagem = mensagem)
 
 @cliente_bp.route('/cadastrar',methods=['POST'])
 def cadastrar():
@@ -40,9 +40,9 @@ def cadastrar():
 
         cadastro,mensagem = validacoes.validar_cadastroCliente(cpf,nome,telefone,dtNascimento,genero,carro)
         if cadastro == False:
-            return redirect(url_for('cliente.cadastro',erro = mensagem))
+            return redirect(url_for('cliente.cadastro',mensagem = mensagem))
         elif(Cliente.query.filter_by(cpf=cpf).first()):
-            return redirect(url_for('cliente.cadastro',erro = "Já possuí um cliente cadastrado com esse CPF"))
+            return redirect(url_for('cliente.cadastro',mensagem = "Já possuí um cliente cadastrado com esse CPF"))
         usuario = Usuarios.query.filter(Usuarios.id_usuario == session['user_id']).first()
         usuario.typeUser = 3
         session['typeUser'] = usuario.typeUser
@@ -54,5 +54,5 @@ def cadastrar():
         return redirect(url_for('endereco.cadastro'))
     
     except:
-        return redirect(url_for('cliente.cadastro',erro = "Algo deu errado, tente novamente"))
+        return redirect(url_for('cliente.cadastro',mensagem = "Algo deu errado, tente novamente"))
 

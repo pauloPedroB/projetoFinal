@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session,current_app
-from classes import db,Produto
+from classes import db,Produto,Produto_Loja,Loja
 import os
 
 import services.validacoes as validacoes
@@ -8,52 +8,69 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 @produto_bp.route('/produtos')
 def produtos():
-    cadastro = validacoes.verificarCadastroCompleto()
-    if cadastro:
-        return cadastro
-    
-    if session['typeUser'] != 1:
-        return redirect(url_for('menu.principal',erro = "Você não possuí acesso de administrador"))
-        
-    mensagem = request.args.get('mensagem', "")
+    try:
+        cadastro = validacoes.verificarCadastroCompleto()
+        if cadastro:
+            return cadastro
+        typeUser = session['typeUser']
+        if typeUser != 1 and typeUser != 2:
+            return redirect(url_for('menu.principal',mensagem = "Você não possuí acesso a essa página"))
+            
+        mensagem = request.args.get('mensagem', "")
 
-    produtos = Produto.query.all()
+        produtos = Produto.query.all()
+        produtos_loja = None
+        if typeUser == 2:
+            loja = Loja.query.filter_by(id_usuario=session['user_id']).first()
 
-    return render_template('menu/produtos.html', mensagem=mensagem,produtos = produtos)
+            produtos_loja = (
+                db.session.query(Produto)
+                .join(Produto_Loja, Produto.id_produto == Produto_Loja.id_produto)
+                .join(Loja, Produto_Loja.id_loja == loja.id_loja)
+                .all()
+            )
+
+        return render_template('menu/produtos.html', mensagem=mensagem,produtos = [produtos,produtos_loja],typeUser = session['typeUser'])
+    except:
+        return redirect(url_for('menu.principal',mensagem = "Algo deu errado, tente novamente"))
 
 @produto_bp.route('/vizualizar/<id>')
 def vizualizar(id):
-    cadastro = validacoes.verificarCadastroCompleto()
-    if cadastro:
-        return cadastro
-    
-    if session['typeUser'] != 1:
-        return redirect(url_for('menu.principal',erro = "Você não possuí acesso de administrador"))
+    try:
+        cadastro = validacoes.verificarCadastroCompleto()
+        if cadastro:
+            return cadastro
+        
+        if session['typeUser'] != 1:
+            return redirect(url_for('menu.principal',mensagem = "Você não possuí acesso de administrador"))
 
-    
-    mensagem = request.args.get('mensagem', "")
-    produto = Produto.query.get(id)
-    if not produto:
-        return redirect(url_for('produto.produtos',erro = "Produto não encontrado"))
-    
-    
-    return render_template('menu/vizualizarProduto.html', mensagem=mensagem,produto = produto)
+        mensagem = request.args.get('mensagem', "")
+        produto = Produto.query.get(id)
+        if not produto:
+            return redirect(url_for('produto.produtos',mensagem = "Produto não encontrado"))
+                
+        return render_template('menu/vizualizarProduto.html', mensagem=mensagem,produto = produto)
+    except:
+        return redirect(url_for('produto.produtos',mensagem = "Algo deu errado, tente novamente"))
+
 
 @produto_bp.route('/cadastro')
 def cadastro():
- 
+    try:
 
-    cadastro = validacoes.verificarCadastroCompleto()
-    if cadastro:
-        return cadastro
-    
-    if session['typeUser'] != 1:
-        return redirect(url_for('menu.principal',erro = "Você não possuí acesso de administrador"))
+        cadastro = validacoes.verificarCadastroCompleto()
+        if cadastro:
+            return cadastro
         
-    erro = request.args.get('erro', "")
+        if session['typeUser'] != 1:
+            return redirect(url_for('menu.principal',mensagem = "Você não possuí acesso de administrador"))
+            
+        mensagem = request.args.get('mensagem', "")
 
 
-    return render_template('menu/criarProduto.html', erro=erro)
+        return render_template('menu/criarProduto.html', mensagem=mensagem)
+    except:
+        return redirect(url_for('produto.produtos',mensagem = "Produto não encontrado"))
 
 @produto_bp.route('/cadastrar',methods=['POST'])
 def cadastrar():
@@ -62,7 +79,7 @@ def cadastrar():
         if cadastro:
             return cadastro
         if session['typeUser'] != 1:
-            return redirect(url_for('menu.principal',erro = "Você não possuí acesso de administrador"))
+            return redirect(url_for('menu.principal',mensagem = "Você não possuí acesso de administrador"))
             
         mensagem = request.args.get('mensagem', "")
 
@@ -70,12 +87,12 @@ def cadastrar():
         file = request.files["imagem"]
 
         if not nome or len(nome) < 3:
-            return redirect(url_for("produto.cadastro", erro = "Nome do produto inválido"))
+            return redirect(url_for("produto.cadastro", mensagem = "Nome do produto inválido"))
 
         if not file:
-            return redirect(url_for("produto.cadastro", erro = "Imagem é obrigatória"))
+            return redirect(url_for("produto.cadastro", mensagem = "Imagem é obrigatória"))
         if not allowed_file(file.filename):
-            return redirect(url_for("produto.cadastro", erro = "Formato de imagem inválido. Use PNG, JPG ou JPEG."))
+            return redirect(url_for("produto.cadastro", mensagem = "Formato de imagem inválido. Use PNG, JPG ou JPEG."))
         filename = file.filename
         # Salva o arquivo na pasta de uploads
         file.save(os.path.join(current_app.config["UPLOAD_FOLDER"], filename))
@@ -85,9 +102,9 @@ def cadastrar():
         novo_produto = Produto(nome_produto = nome, img = filename)
         db.session.add(novo_produto)
         db.session.commit()
-        return redirect(url_for('produto.produtos'))
+        return redirect(url_for('produto.produtos',mensagem = "Produto Cadastrado com Sucesso"))
     except:
-        return redirect(url_for('produto.cadastro',erro = "Algo deu errado, tente novamente"))
+        return redirect(url_for('produto.cadastro',mensagem = "Algo deu errado, tente novamente"))
 
 @produto_bp.route('/excluir/<id>',methods=['POST'])
 def excluir(id):
@@ -96,22 +113,22 @@ def excluir(id):
         if cadastro:
             return cadastro
         if session['typeUser'] != 1:
-            return redirect(url_for('menu.principal',erro = "Você não possuí acesso de administrador"))
+            return redirect(url_for('menu.principal',mensagem = "Você não possuí acesso de administrador"))
             
         mensagem = request.args.get('mensagem', "")
 
         produto = Produto.query.get(id)
         if not produto:
-            return redirect(url_for('produto.produtos',erro = "Produto não encontrado"))
+            return redirect(url_for('produto.produtos',mensagem = "Produto não encontrado"))
 
         db.session.delete(produto)
         db.session.commit()
       
 
       
-        return redirect(url_for('produto.produtos', erro = "Produto deletado com sucesso"))
+        return redirect(url_for('produto.produtos', mensagem = "Produto deletado com sucesso"))
     except:
-        return redirect(url_for('produto.cadastro',erro = "Algo deu errado, tente novamente"))
+        return redirect(url_for('produto.produtos',mensagem = "Algo deu errado, tente novamente"))
     
 @produto_bp.route('/editar/<id>',methods=['POST'])
 def editar(id):
@@ -120,18 +137,18 @@ def editar(id):
         if cadastro:
             return cadastro
         if session['typeUser'] != 1:
-            return redirect(url_for('menu.principal',erro = "Você não possuí acesso de administrador"))
+            return redirect(url_for('menu.principal',mensagem = "Você não possuí acesso de administrador"))
             
         mensagem = request.args.get('mensagem', "")
 
         produto = Produto.query.get(id)
         if not produto:
-            return redirect(url_for('produto.produtos',erro = "Produto não encontrado"))
+            return redirect(url_for('produto.produtos',mensagem = "Produto não encontrado"))
 
-        return render_template('menu/criarProduto.html', erro=mensagem,produto = produto)
+        return render_template('menu/criarProduto.html', mensagem=mensagem,produto = produto)
 
     except:
-        return redirect(url_for('produto.produtos',erro = "Algo deu errado, tente novamente"))
+        return redirect(url_for('produto.produtos',mensagem = "Algo deu errado, tente novamente"))
     
 @produto_bp.route('/update/<id>',methods=['POST'])
 def update(id):
@@ -140,23 +157,23 @@ def update(id):
         if cadastro:
             return cadastro
         if session['typeUser'] != 1:
-            return redirect(url_for('menu.principal',erro = "Você não possuí acesso de administrador"))
+            return redirect(url_for('menu.principal',mensagem = "Você não possuí acesso de administrador"))
             
         mensagem = request.args.get('mensagem', "")
 
         produto = Produto.query.get(id)
         if not produto:
-            return redirect(url_for('produto.produtos',erro = "Produto não encontrado"))
+            return redirect(url_for('produto.produtos',mensagem = "Produto não encontrado"))
         
         nome = request.form['name']
         file = request.files["imagem"]
 
         if not nome or len(nome) < 3:
-            return redirect(url_for("produto.cadastro", erro = "Nome do produto inválido"))
+            return redirect(url_for("produto.cadastro", mensagem = "Nome do produto inválido"))
 
         if file:
             if not allowed_file(file.filename):
-                return redirect(url_for("produto.cadastro", erro = "Formato de imagem inválido. Use PNG, JPG ou JPEG."))
+                return redirect(url_for("produto.cadastro", mensagem = "Formato de imagem inválido. Use PNG, JPG ou JPEG."))
             filename = file.filename
             file.save(os.path.join(current_app.config["UPLOAD_FOLDER"], filename))
              # Armazena o nome da imagem em um arquivo de texto
@@ -165,9 +182,9 @@ def update(id):
             produto.img = filename
         produto.nome_produto = nome
         db.session.commit()
-        return redirect(url_for('produto.produtos'))
+        return redirect(url_for('produto.produtos',mensagem = "Produto Editado com Sucesso"))
     except:
-        return redirect(url_for('produto.produtos',erro = "Algo deu errado, tente novamente"))
+        return redirect(url_for('produto.produtos',mensagem = "Algo deu errado, tente novamente"))
 
 def allowed_file(filename):
     """Verifica se o arquivo tem uma extensão permitida"""

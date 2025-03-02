@@ -22,16 +22,16 @@ def logout():
 @auth_bp.route('/inicio')
 def inicio():
     
-    erro = request.args.get('erro')
-    if erro == None:
-        erro = ""
+    mensagem = request.args.get('mensagem')
+    if mensagem == None:
+        mensagem = ""
 
     verificar = verificarLog()
     if verificar:
         return verificar
 
     
-    return render_template('index.html',erro=erro)
+    return render_template('index.html',mensagem=mensagem)
 
 @auth_bp.route('/cadastro')
 def cadastro():
@@ -39,8 +39,8 @@ def cadastro():
     if verificar:
         return verificar
     
-    erro = request.args.get('erro', '')  # Se erro for None, retorna ""
-    return render_template('cadastro.html', erro=erro)
+    mensagem = request.args.get('mensagem', '')  # Se erro for None, retorna ""
+    return render_template('cadastro.html', mensagem=mensagem)
 
 @auth_bp.route('/cadastrar', methods=['POST'])
 def cadastrar():
@@ -56,9 +56,9 @@ def cadastrar():
         validacao, mensagem = validacoes.validar_cadastro(email, senha, confirmacao_senha)
 
         if not validacao:
-            return redirect(url_for('auth.cadastro', erro=mensagem))
+            return redirect(url_for('auth.cadastro', mensagem=mensagem))
         elif Usuarios.query.filter_by(email_usuario=email).first():
-            return redirect(url_for('auth.cadastro', erro="Email já cadastrado!"))
+            return redirect(url_for('auth.cadastro', mensagem="Email já cadastrado!"))
         
         hashed_password = generate_password_hash(senha)
         
@@ -74,7 +74,7 @@ def cadastrar():
         return redirect(url_for('menu.escolha'))
 
     except:
-        return redirect(url_for('auth.cadastro', erro="Erro ao tentar se cadastrar"))
+        return redirect(url_for('auth.cadastro', mensagem="Erro ao tentar se cadastrar"))
     
 @auth_bp.route('/entrar', methods=['POST'])
 def entrar():
@@ -96,11 +96,11 @@ def entrar():
 
                 return redirect(url_for('menu.principal'))
 
-            return redirect(url_for('auth.inicio', erro='Senha incorreta'))
-        return redirect(url_for('auth.inicio', erro='Usuário não encontrado'))
+            return redirect(url_for('auth.inicio', mensagem='Senha incorreta'))
+        return redirect(url_for('auth.inicio', mensagem='Usuário não encontrado'))
         
    except:
-        return redirect(url_for('auth.inicio', erro='Erro ao tentar acessar o sistema'))
+        return redirect(url_for('auth.inicio', mensagem='Erro ao tentar acessar o sistema'))
     
 @auth_bp.route('/recuperar')
 def recuperar():
@@ -119,9 +119,9 @@ def recuperarsenha():
         usuario = Usuarios.query.filter((Usuarios.email_usuario == email)).first()
         if(usuario):
             enviarEmail(2, usuario.id_usuario, usuario.email_usuario)
-            return redirect(url_for('auth.inicio', erro='Email de recuperação enviada para sua caixa de mensagens'))
+            return redirect(url_for('auth.inicio', mensagem='Email de recuperação enviada para sua caixa de mensagens'))
         else:
-            return redirect(url_for('auth.inicio', erro='Usuário não encontado'))
+            return redirect(url_for('auth.inicio', mensagem='Usuário não encontado'))
 
 
 @auth_bp.route('/recuperar/<token>')
@@ -132,7 +132,7 @@ def senhas(token):
 
         return render_template('senhas.html',token = token,mensagem = mensagem)
     except:
-        return redirect(url_for('auth.inicio', erro='Algo deu errado ao procurar o seu token, repita o processo de recuperação'))
+        return redirect(url_for('auth.inicio', mensagem='Algo deu errado ao procurar o seu token, repita o processo de recuperação'))
     
 @auth_bp.route('/alterarsenha', methods=['POST'])
 def alterarsenha():
@@ -166,7 +166,7 @@ def alterarsenha():
         token.usado = True
         db.session.commit()
         
-        return redirect(url_for('auth.inicio', erro="Senha alterada com sucesso."))
+        return redirect(url_for('auth.inicio', mensagem="Senha alterada com sucesso."))
     except:
         return redirect(url_for('auth.senhas',mensagem="Erro ao tentar alterar senha",token = id_token))
 

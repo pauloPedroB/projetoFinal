@@ -9,9 +9,8 @@
 <body>
     <header class="cabeçalho1">
         <div class="options">
-  
+            <a href="/produto/produtos"><h4>Produtos</h4></a>
             <a href="/menu/principal"><h4>Menu</h4></a>
-
         </div>
 
         <div class="perfil">
@@ -20,24 +19,45 @@
         </div>
         
     </header>
-    {% if erro !="" %}
+    {% if mensagem !="" %}
     <div class="mensagem">
-        <h3>{{erro}}</h3>
+        <h3>{{mensagem}}</h3>
     </div>
     {% endif %}
-    <a href="/produto/cadastro">Cadastrar Produtos</a>
-
+    {%if typeUser == 1%}
+        <a href="/produto/cadastro">Cadastrar Produtos</a>
+    {% endif %}
     <main class="corpo">
         {% if produtos %}
-            {%for produto in produtos%}
+            {%for produto in produtos[0]%}
+                <div class="opcao">
+                    <a href="/produto/vizualizar/{{produto.id_produto}}">
+                        <h2>{{produto.nome_produto}}</h2>
+                        <img src="{{ url_for('static', filename='uploads/' + produto.img) }}" alt="">
+                        {%if typeUser ==1%}
+                            <form action="/produto/editar/{{produto.id_produto}}" method="post">
+                                <input type="submit" value="Editar">
+                            </form>
+                            <form action="/produto/excluir/{{produto.id_produto}}" method="post">
+                                <input type="submit" value="Exluir" style="background-color: red;">
+                            </form>
+                        {%elif typeUser == 2%}
+                            <form action="/loja/vincular/{{produto.id_produto}}" method="post">
+                                <input type="submit" value="Vincular" style="background-color: green;">
+                            </form>
+                        {%endif%}
+                    </a>
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% if produtos[1] != None%}
+                <h4>Meus Produtos</h4>
+            {%for produto in produtos[1]%}
                 <div class="opcao">
                     <h2>{{produto.nome_produto}}</h2>
                     <img src="{{ url_for('static', filename='uploads/' + produto.img) }}" alt="">
-                    <form action="/produto/editar/{{produto.id_produto}}" method="post">
-                        <input type="submit" value="Editar">
-                    </form>
-                    <form action="/produto/excluir/{{produto.id_produto}}" method="post">
-                        <input type="submit" value="Exluir">
+                    <form action="/loja/desvincular/{{produto.id_produto}}" method="post">
+                        <input type="submit" value="Desvincular" style="background-color: red;">
                     </form>
                 </div>
             {% endfor %}

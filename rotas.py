@@ -37,10 +37,12 @@ app.register_blueprint(produto_bp,url_prefix='/produto')
 
 @app.route('/')
 def index():
-    return redirect(url_for('auth.inicio'))
-
-
-
+    try:
+        return redirect(url_for('auth.inicio'))
+    except:
+        session.clear()
+        return redirect(url_for('auth.inicio',erro = "Algo deu errado, acesse o sistema novamente"))
+        
 @app.route('/buscar_cep', methods=['GET'])
 def buscar_cep():
     cep = request.args.get('cep')
