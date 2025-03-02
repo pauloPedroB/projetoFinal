@@ -177,7 +177,6 @@ main {
     align-items: center;
     margin: 0;
     height: 100vh;
-    grid-template-columns: repeat(2, 1fr); /* Altere para 2 itens */
     text-align: center;
     display: flex;
     flex-wrap: wrap;

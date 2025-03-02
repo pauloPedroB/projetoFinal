@@ -31,8 +31,8 @@ def produtos():
             )
 
         return render_template('menu/produtos.html', mensagem=mensagem,produtos = produtos, produtos_loja = produtos_loja,typeUser = session['typeUser'])
-    except:
-        return redirect(url_for('menu.principal',mensagem = "Algo deu errado, tente novamente"))
+    except Exception as e:
+        return redirect(url_for('menu.principal',mensagem = f"Algo deu errado, tente novamente: {e}"))
 
 @produto_bp.route('/vizualizar/<id>')
 def vizualizar(id):
@@ -50,8 +50,8 @@ def vizualizar(id):
             return redirect(url_for('produto.produtos',mensagem = "Produto não encontrado"))
                 
         return render_template('menu/vizualizarProduto.html', mensagem=mensagem,produto = produto)
-    except:
-        return redirect(url_for('produto.produtos',mensagem = "Algo deu errado, tente novamente"))
+    except Exception as e:
+        return redirect(url_for('menu.principal',mensagem = f"Algo deu errado, tente novamente: {e}"))
 
 
 @produto_bp.route('/cadastro')

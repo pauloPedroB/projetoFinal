@@ -146,6 +146,7 @@ def produto(id_produto):
         if not produto:
             return redirect(url_for('produto.produtos',mensagem = "Produto não encontrado"))
         endereco_loja = Endereco.query.filter_by(id_usuario = loja.id_usuario).first()
+        endereco_user = Endereco.query.filter_by(id_usuario = session['user_id']).first()
         distancia = None
         if session['typeUser'] != 1:
             lat = session['lat']
@@ -154,4 +155,4 @@ def produto(id_produto):
                                     (float(lat), float(long))).km
 
         
-        return render_template('menu/vizualizarProduto.html', mensagem=mensagem,produto = produto,loja = [loja,endereco_loja,distancia])
+        return render_template('menu/vizualizarProduto.html', mensagem=mensagem,produto = produto,loja = [loja,endereco_loja,distancia,endereco_user])

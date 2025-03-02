@@ -21,26 +21,29 @@ def escolha():
 
 @menu_bp.route('/principal')
 def principal():
- 
+    try:
 
-    cadastro = validacoes.verificarCadastroCompleto()
-    if cadastro:
-        return cadastro
-    
-    mensagem = request.args.get('mensagem', "")
-
-    
-    #dados = []
-    #if session['typeUser'] == 1:
-     #   dados = Administrador.query.filter_by(id_usuario=session['user_id']).first()
-    #elif session['typeUser']:
-     #   dados = Loja.query.filter_by(id_usuario=session['user_id']).first()
-    #else:
-     #   dados = Cliente.query.filter_by(id_usuario=session['user_id']).first()
-
+        cadastro = validacoes.verificarCadastroCompleto()
+        if cadastro:
+            return cadastro
+        
+        mensagem = request.args.get('mensagem', "")
 
         
-    return render_template('menu/menu.html', mensagem=mensagem,typeUser = session['typeUser'])
+        #dados = []
+        #if session['typeUser'] == 1:
+        #   dados = Administrador.query.filter_by(id_usuario=session['user_id']).first()
+        #elif session['typeUser']:
+        #   dados = Loja.query.filter_by(id_usuario=session['user_id']).first()
+        #else:
+        #   dados = Cliente.query.filter_by(id_usuario=session['user_id']).first()
+
+
+            
+        return render_template('menu/menu.html', mensagem=mensagem,typeUser = session['typeUser'])
+    except Exception as e:
+        session.clear()
+        return redirect(url_for('auth.inicio',mensagem = f"Erro ao acessar o Sistema {e}"))
 
 
 
