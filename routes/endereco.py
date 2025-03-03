@@ -122,7 +122,7 @@ def validar_endereco(cep, numero, complemento, rua, cidade, uf,bairro):
     if len(complemento) > MAX_COMPLEMENTO_LENGTH:
         return False,f"Complemento não pode ter mais que {MAX_COMPLEMENTO_LENGTH} caracteres."
     
-    endereco_formatado = f'{rua}, {numero}, {bairro}, {cidade}, {uf}, Brasil'
+    endereco_formatado = f'{rua}, {numero}, {cidade}, {uf}, Brasil'
     latLong = obter_lat_long(endereco_formatado,bairro,cidade)
     
     return True, [re.sub(r"\D", "", cep),numero, complemento, rua, cidade, uf,bairro, latLong["latitude"], latLong["longitude"]]
@@ -131,7 +131,6 @@ def validar_endereco(cep, numero, complemento, rua, cidade, uf,bairro):
 def obter_lat_long(endereco,bairro,cidade):
     # Primeiro, tente usar o Nominatim
     geolocator_nominatim = Nominatim(user_agent="myGeocoder")
-    
     try:
         localizacao = geolocator_nominatim.geocode(endereco, timeout=10)
         if localizacao:

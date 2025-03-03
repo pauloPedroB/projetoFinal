@@ -146,13 +146,14 @@ def produto(id_produto):
         endereco_loja = Endereco.query.filter_by(id_usuario = loja.id_usuario).first()
         endereco_user = Endereco.query.filter_by(id_usuario = session['user_id']).first()
         distancia = None
-        if session['typeUser'] != 1:
+        typeUser = session['typeUser']
+
+        if typeUser != 1:
             lat = session['lat']
             long = session['long']
             distancia = geodesic((float(endereco_loja.latitude), float(endereco_loja.longitude)),
                                     (float(lat), float(long))).km
             distancia = round(distancia, 2)
-        
-        return render_template('menu/vizualizarProduto.html', mensagem=mensagem,produto = produto,loja = [loja,endereco_loja,distancia,endereco_user])
+        return render_template('menu/vizualizarProduto.html', mensagem=mensagem,typeUser = typeUser,produto = produto,loja = [loja,endereco_loja,distancia,endereco_user])
     except Exception as e:
         return redirect(url_for('menu.principal',mensagem = f"Algo deu errado, tente novamente: {e}"))
