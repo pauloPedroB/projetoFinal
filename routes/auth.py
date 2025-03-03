@@ -112,6 +112,7 @@ def recuperar():
 
 @auth_bp.route('/recuperarsenha', methods=['POST'])
 def recuperarsenha():
+    try:
         verificar = verificarLog()
         if verificar:
             return verificar
@@ -122,6 +123,10 @@ def recuperarsenha():
             return redirect(url_for('auth.inicio', mensagem='Email de recuperação enviada para sua caixa de mensagens'))
         else:
             return redirect(url_for('auth.inicio', mensagem='Usuário não encontado'))
+    except Exception as e:
+            return redirect(url_for('auth.inicio', mensagem=f'Algo deu errado, tente novamente: {e}'))
+
+        
 
 
 @auth_bp.route('/recuperar/<token>')
@@ -131,8 +136,8 @@ def senhas(token):
         mensagem = request.args.get('mensagem', '')
 
         return render_template('senhas.html',token = token,mensagem = mensagem)
-    except:
-        return redirect(url_for('auth.inicio', mensagem='Algo deu errado ao procurar o seu token, repita o processo de recuperação'))
+    except Exception as e:
+        return redirect(url_for('auth.inicio', mensagem= f'Algo deu errado ao procurar o seu token, repita o processo de recuperação: {e}'))
     
 @auth_bp.route('/alterarsenha', methods=['POST'])
 def alterarsenha():
@@ -167,8 +172,8 @@ def alterarsenha():
         db.session.commit()
         
         return redirect(url_for('auth.inicio', mensagem="Senha alterada com sucesso."))
-    except:
-        return redirect(url_for('auth.senhas',mensagem="Erro ao tentar alterar senha",token = id_token))
+    except Exception as e:
+        return redirect(url_for('auth.senhas',mensagem=f"Erro ao tentar alterar senha: {e}",token = id_token))
 
     
 

@@ -79,8 +79,8 @@ foreign key(id_produto) references produtos(id_produto),
 foreign key(id_loja) references lojas(id_loja)
 );
 
-select * from produtos;
-#update usuarios set typeUser = 1 where id_usuario = 1;
-#insert into administradores (nome, id_usuario) values ("Pedro", 1);
+insert into usuarios (email_usuario,pass_usuario,verificado,typeUser) values("adminColiseu@admin.com","scrypt:32768:8:1$nKTOXJJkBoS7HPUL$a7c935018385ecf3de772a227d81272487a188803cec73d4296fb6abc688ccdbdb174e46a0d5c9a537912dd510d62dab472c78651dff95378d31189a6eaaf7e4","20250303",1);
+update usuarios set typeUser = 1 where id_usuario = 1;
+insert into administradores (nome, id_usuario) values ("Pedro", 1);
 
 

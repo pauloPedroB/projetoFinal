@@ -13,18 +13,21 @@ import services.validacoes as validacoes
 
 @endereco_bp.route('/cadastro')
 def cadastro():
-    verificar = validacoes.verificarCadastro()
-    if verificar:
-        return verificar
-    verificarLojaCliente = validacoes.verificarLojaCliente()
-    if verificarLojaCliente:
-        return verificarLojaCliente
-    if Endereco.query.filter_by(id_usuario=session['user_id']).first() or Administrador.query.filter_by(id_usuario=session['user_id']).first():
-        return redirect(url_for('menu.principal'))
-    mensagem = request.args.get('mensagem')
-    if mensagem == None:
-        mensagem = ""
-    return render_template('cadastroEnd.html',mensagem = mensagem)
+    try:
+        verificar = validacoes.verificarCadastro()
+        if verificar:
+            return verificar
+        verificarLojaCliente = validacoes.verificarLojaCliente()
+        if verificarLojaCliente:
+            return verificarLojaCliente
+        if Endereco.query.filter_by(id_usuario=session['user_id']).first() or Administrador.query.filter_by(id_usuario=session['user_id']).first():
+            return redirect(url_for('menu.principal'))
+        mensagem = request.args.get('mensagem')
+        if mensagem == None:
+            mensagem = ""
+        return render_template('cadastroEnd.html',mensagem = mensagem)
+    except Exception as e:
+            return redirect(url_for('menu.principal',mensagem = f"Algo deu errado, tente novamente: {e}"))
 
 
 @endereco_bp.route('/cadastrar',methods=['POST'])
@@ -60,8 +63,8 @@ def cadastrar():
         db.session.add(novo_Endereco)
         db.session.commit()
         return redirect(url_for('menu.principal'))
-    except:
-        return redirect(url_for('endereco.cadastro', mensagem = "Algo deu errado, tente novamente"))
+    except Exception as e:
+        return redirect(url_for('endereco.cadastro', mensagem = f"Algo deu errado, tente novamente: {e}"))
 
 
        
@@ -119,13 +122,13 @@ def validar_endereco(cep, numero, complemento, rua, cidade, uf,bairro):
     if len(complemento) > MAX_COMPLEMENTO_LENGTH:
         return False,f"Complemento não pode ter mais que {MAX_COMPLEMENTO_LENGTH} caracteres."
     
-    endereco_formatado = f'{rua}, {numero}, {bairro}, {bairro}, {uf}, Brasil'
-    latLong = obter_lat_long(endereco_formatado)
+    endereco_formatado = f'{rua}, {numero}, {bairro}, {cidade}, {uf}, Brasil'
+    latLong = obter_lat_long(endereco_formatado,bairro,cidade)
     
     return True, [re.sub(r"\D", "", cep),numero, complemento, rua, cidade, uf,bairro, latLong["latitude"], latLong["longitude"]]
 
 
-def obter_lat_long(endereco):
+def obter_lat_long(endereco,bairro,cidade):
     # Primeiro, tente usar o Nominatim
     geolocator_nominatim = Nominatim(user_agent="myGeocoder")
     
@@ -135,30 +138,21 @@ def obter_lat_long(endereco):
             return {"latitude": localizacao.latitude, "longitude": localizacao.longitude}
     except GeocoderTimedOut:
         print("Erro de timeout com Nominatim.")
-    
-    # Se o Nominatim não funcionar, tente o OpenCage
-    chave_api_opencage = '25fc62d0f13d40448e3f206d06bc89bd'
-    geolocator_opencage = OpenCage(api_key=chave_api_opencage)
-    
-    try:
-        localizacao = geolocator_opencage.geocode(endereco)
-        if localizacao:
-            return {"latitude": localizacao.latitude, "longitude": localizacao.longitude}
-    except Exception as e:
-        print(f"Erro ao tentar o OpenCage: {e}")
-    
-    partes_endereco = endereco.split(',')
-    
-    bairro = partes_endereco[1] if len(partes_endereco) > 1 else None
-    cidade = partes_endereco[2] if len(partes_endereco) > 2 else partes_endereco[1]
 
-    if bairro and cidade:
-        endereco_bairro_cidade = f"{bairro.strip()}, {cidade.strip()}"
-        try:
-            localizacao_bairro_cidade = geolocator_opencage.geocode(endereco_bairro_cidade)
-            if localizacao_bairro_cidade:
-                return {"latitude": localizacao_bairro_cidade.latitude, "longitude": localizacao_bairro_cidade.longitude}
-        except Exception as e:
-            print(f"Erro ao tentar buscar o bairro e cidade com OpenCage: {e}")
+    endereco_bairro_cidade = f"{bairro}, {cidade}, Brasil"
+    try:
+        localizacao_bairro_cidade = geolocator_nominatim.geocode(endereco_bairro_cidade)
+        if localizacao_bairro_cidade:
+            return {"latitude": localizacao_bairro_cidade.latitude, "longitude": localizacao_bairro_cidade.longitude}
+    except Exception as e:
+        print(f"Erro ao tentar buscar o bairro e cidade com OpenCage: {e}")
+    
+    endereco_cidade = f"{cidade}, Brasil"
+    try:
+        localizacao_cidade = geolocator_nominatim.geocode(endereco_cidade)
+        if localizacao_cidade:
+            return {"latitude": localizacao_cidade.latitude, "longitude": localizacao_cidade.longitude}
+    except Exception as e:
+        print(f"Erro ao tentar buscar o bairro e cidade com OpenCage: {e}")
     
     return None

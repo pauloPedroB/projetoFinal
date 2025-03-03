@@ -126,6 +126,7 @@ def desvincular(id_produto):
         return redirect(url_for('produto.produtos',mensagem = "Algo deu errado, tente novamente"))
 @loja_bp.route('/produto/<id_produto>')
 def produto(id_produto):
+    try:
         verificar = validacoes.verificarCadastroCompleto()
         if verificar:
             return verificar
@@ -138,10 +139,10 @@ def produto(id_produto):
             return redirect(url_for('menu.principal',mensagem = "Produto não encontrado"))
         loja = Loja.query.filter_by(id_loja=produto_loja.id_loja).first()
         if not loja:
-            return redirect(url_for('produto.produtos',mensagem = "Loja não encontrada"))
+            return redirect(url_for('menu.principals',mensagem = "Loja não encontrada"))
         produto = Produto.query.filter_by(id_produto=produto_loja.id_produto).first()
         if not produto:
-            return redirect(url_for('produto.produtos',mensagem = "Produto não encontrado"))
+            return redirect(url_for('menu.principal',mensagem = "Produto não encontrado"))
         endereco_loja = Endereco.query.filter_by(id_usuario = loja.id_usuario).first()
         endereco_user = Endereco.query.filter_by(id_usuario = session['user_id']).first()
         distancia = None
@@ -153,3 +154,5 @@ def produto(id_produto):
             distancia = round(distancia, 2)
         
         return render_template('menu/vizualizarProduto.html', mensagem=mensagem,produto = produto,loja = [loja,endereco_loja,distancia,endereco_user])
+    except Exception as e:
+        return redirect(url_for('menu.principal',mensagem = f"Algo deu errado, tente novamente: {e}"))

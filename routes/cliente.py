@@ -8,17 +8,21 @@ cliente_bp = Blueprint('cliente', __name__)
 
 @cliente_bp.route('/cadastro')
 def cadastro():
-    verificar = validacoes.verificarCadastro()
-    if verificar:
-        return verificar
-    verificarLojaCliente = validacoes.verificarUsuario()
-    if verificarLojaCliente:
-        return verificarLojaCliente
-    
-    mensagem = request.args.get('mensagem')
-    if mensagem == None:
-        mensagem = ""
-    return render_template('cadastroCliente.html',mensagem = mensagem)
+    try:
+        verificar = validacoes.verificarCadastro()
+        if verificar:
+            return verificar
+        verificarLojaCliente = validacoes.verificarUsuario()
+        if verificarLojaCliente:
+            return verificarLojaCliente
+        
+        mensagem = request.args.get('mensagem')
+        if mensagem == None:
+            mensagem = ""
+        return render_template('cadastroCliente.html',mensagem = mensagem)
+    except Exception as e:
+        return redirect(url_for('menu.principal',mensagem = f"Algo deu errado, tente novamente: {e}"))
+
 
 @cliente_bp.route('/cadastrar',methods=['POST'])
 def cadastrar():
@@ -53,6 +57,6 @@ def cadastrar():
         db.session.commit()
         return redirect(url_for('endereco.cadastro'))
     
-    except:
-        return redirect(url_for('cliente.cadastro',mensagem = "Algo deu errado, tente novamente"))
+    except Exception as e:
+        return redirect(url_for('cliente.cadastro',mensagem = f"Algo deu errado, tente novamente: {e}"))
 
