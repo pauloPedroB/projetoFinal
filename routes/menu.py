@@ -30,6 +30,8 @@ def principal():
         pesquisa = request.args.get('pesquisa',"")
         R = 6371
         distancia = None
+
+
         if pesquisa != "" and typeUser != 1: 
             distancia = func.round(  
                 R * func.acos(
@@ -66,7 +68,34 @@ def principal():
             .limit(20) \
             .all()
             
-        return render_template('menu/menu.html', mensagem=mensagem,typeUser = session['typeUser'],produtos_lojas = produtos_lojas,pesquisa = pesquisa)
+        return render_template('menu/menu.html', mensagem=mensagem,typeUser = typeUser,produtos_lojas = produtos_lojas,pesquisa = pesquisa)
+
+    except Exception as e:
+        session.clear()
+        return redirect(url_for('auth.inicio',mensagem = f"Erro ao acessar o Sistema {e}"))
+    
+@menu_bp.route('/dados')
+def dados():
+    try:
+        cadastro = validacoes.verificarCadastroCompleto()
+        if cadastro:
+            return cadastro
+        typeUser = session['typeUser']
+        mensagem = request.args.get('mensagem', "")
+        if typeUser == 1:
+            return redirect(url_for('menu.principal', mensagem="Você não possuí acesso a essa página",typeUser = typeUser))
+
+        if typeUser == 2:
+            dados = Loja.query.filter_by(id_usuario = session['user_id']).first()
+        if typeUser == 3:
+            dados = Cliente.query.filter_by(id_usuario = session['user_id']).first()
+        if not dados:
+            return redirect(url_for('menu.principal', mensagem="Não encontramos um Cliente ou Loja vinculado ao seu Usuário",typeUser = typeUser))
+        endereco = Endereco.query.filter_by(id_usuario=session['user_id']).first()
+
+
+            
+        return render_template('menu/dados.html', mensagem=mensagem,typeUser = session['typeUser'],dados = dados,endereco = endereco)
 
     except Exception as e:
         session.clear()

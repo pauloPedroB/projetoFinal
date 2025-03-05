@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meus Dados</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <header class="cabeçalho1">
+        <div class="options">
+            {%if typeUser != 3%}
+            <a href="/produto/produtos"><h4>Produtos</h4></a>
+            {%endif%}
+            <a href="/menu/principal"><h4>Menu</h4></a>
+        </div>
+
+        <div class="perfil">
+            <h3> Bem vindo</h3>
+            <a href="/auth/sair"><img src="https://cdn-icons-png.flaticon.com/512/6218/6218420.png" alt=""></a>
+        </div>
+        
+    </header>
+    {% if mensagem !="" %}
+    <div class="mensagem">
+        <h3>{{mensagem}}</h3>
+    </div>
+    {% endif %}
+
+    <main class="corpo" style="display: block;">
+        <h2>Dados</h2>
+        {%if typeUser == 2%}
+            <p>CNPJ {{dados['cnpj']}}</p>
+            <p>Nome Fantasia {{dados['nomeFantasia']}}</p>
+            <p>Razão Social {{dados['razaoSocial']}}</p>
+            <p>Telefone {{dados['telefone']}}</p>
+            <p>Celular {{dados['celular']}}</p>
+            <p>Abertura {{dados['abertura']}}</p>
+        {%endif%}
+        {%if typeUser == 3%}
+            <p>CPF {{dados['cpf']}}</p>
+            <p>Nome {{dados['nome']}}</p>
+            <p>Data de Nascimento{{dados['dtNascimento']}}</p>
+            <p>Telefone {{dados['telefone']}}</p>
+            <p>Gênero {{dados['genero']}}</p>
+            <p>Abertura {{dados['abertura']}}</p>
+        {%endif%}
+     
+        <h2>Endereço</h2>
+        <p>CEP: {{endereco.cep}}</p>
+        <p>Rua: {{endereco.rua}}</p>
+        <p>Número: {{endereco.nmr}}</p>
+        <p>Complemento: {{endereco.complemento}}</p>
+        <p>Bairro: {{endereco.bairro}}</p>
+        <p>Cidade: {{endereco.cidade}}</p>
+        <p>Estado: {{endereco.uf}}</p>
+    </main>
+    
+</body>
+</html>
