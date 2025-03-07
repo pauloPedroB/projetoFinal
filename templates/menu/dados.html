@@ -30,6 +30,9 @@
     <main class="corpo" style="display: block;">
         <h2>Dados</h2>
         {%if typeUser == 2%}
+        <form action="/loja/editar/{{dados['id_loja']}}" method="post">
+            <input type="submit" value="Editar">
+        </form>
             <p>CNPJ {{dados['cnpj']}}</p>
             <p>Nome Fantasia {{dados['nomeFantasia']}}</p>
             <p>Razão Social {{dados['razaoSocial']}}</p>
@@ -38,6 +41,9 @@
             <p>Abertura {{dados['abertura']}}</p>
         {%endif%}
         {%if typeUser == 3%}
+        <form action="/cliente/editar/{{dados['id_cliente']}}" method="post">
+            <input type="submit" value="Editar">
+        </form>
             <p>CPF {{dados['cpf']}}</p>
             <p>Nome {{dados['nome']}}</p>
             <p>Data de Nascimento{{dados['dtNascimento']}}</p>
@@ -47,6 +53,9 @@
         {%endif%}
      
         <h2>Endereço</h2>
+        <form action="/endereco/editar/{{endereco.id}}" method="post">
+            <input type="submit" value="Editar">
+        </form>
         <p>CEP: {{endereco.cep}}</p>
         <p>Rua: {{endereco.rua}}</p>
         <p>Número: {{endereco.nmr}}</p>
