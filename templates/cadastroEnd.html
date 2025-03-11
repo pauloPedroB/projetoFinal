@@ -23,58 +23,58 @@
 
                 <label for="CEP">CEP</label>
                 <span class="error-message" id="cepError"></span>
-                <input type="text" id="CEP" name="CEP" placeholder="CEP: (APENAS NÚMEROS)" />
+                <input type="text" id="CEP" name="CEP" placeholder="CEP: (APENAS NÚMEROS)" value="{{endereco.cep if endereco else ''}}"/>
 
                 <label for="rua">Rua</label>
                 <span class="error-message" id="ruaError"></span>
-                <input type="text" id="rua" name="rua">
+                <input type="text" id="rua" name="rua" value="{{endereco.rua if endereco else ''}}">
 
                 <label for="numero">Número</label>
                 <span class="error-message" id="numeroError"></span>
-                <input type="number" id="numero" name="numero">
+                <input type="number" id="numero" name="numero" value="{{endereco.nmr if endereco else ''}}">
 
                 <label for="complemento">Complemento</label>
                 <span class="error-message" id="complementoError"></span>
-                <input type="text" id="complemento" name="complemento">
+                <input type="text" id="complemento" name="complemento" value="{{endereco.complemento if endereco else ''}}">
 
                 <label for="bairro">Bairro</label>
                 <span class="error-message" id="bairroError"></span>
-                <input type="text" id="bairro" name="bairro">
+                <input type="text" id="bairro" name="bairro" value="{{endereco.bairro if endereco else ''}}">
 
                 <label for="cidade">Cidade</label>
                 <span class="error-message" id="cidadeError"></span>
-                <input type="text" id="cidade" name="cidade">
+                <input type="text" id="cidade" name="cidade" value="{{endereco.cidade if endereco else ''}}">
 
                 <label for="uf">UF</label>
                 <select name="uf" id="uf">
                     <option value="">Selecione a UF</option>
-                    <option value="AC">Acre</option>
-                    <option value="AL">Alagoas</option>
-                    <option value="AP">Amapá</option>
-                    <option value="AM">Amazonas</option>
-                    <option value="BA">Bahia</option>
-                    <option value="CE">Ceará</option>
-                    <option value="DF">Distrito Federal</option>
-                    <option value="ES">Espírito Santo</option>
-                    <option value="GO">Goiás</option>
-                    <option value="MA">Maranhão</option>
-                    <option value="MT">Mato Grosso</option>
-                    <option value="MS">Mato Grosso do Sul</option>
-                    <option value="MG">Minas Gerais</option>
-                    <option value="PA">Pará</option>
-                    <option value="PB">Paraíba</option>
-                    <option value="PR">Paraná</option>
-                    <option value="PE">Pernambuco</option>
-                    <option value="PI">Piauí</option>
-                    <option value="RJ">Rio de Janeiro</option>
-                    <option value="RN">Rio Grande do Norte</option>
-                    <option value="RS">Rio Grande do Sul</option>
-                    <option value="RO">Rondônia</option>
-                    <option value="RR">Roraima</option>
-                    <option value="SC">Santa Catarina</option>
-                    <option value="SP">São Paulo</option>
-                    <option value="SE">Sergipe</option>
-                    <option value="TO">Tocantins</option>
+                    <option value="AC" {% if endereco and endereco.uf == "AC" %}selected{% endif %}>Acre</option>
+                    <option value="AL" {% if endereco and endereco.uf == "AL" %}selected{% endif %}>Alagoas</option>
+                    <option value="AP" {% if endereco and endereco.uf == "AP" %}selected{% endif %}>Amapá</option>
+                    <option value="AM" {% if endereco and endereco.uf == "AM" %}selected{% endif %}>Amazonas</option>
+                    <option value="BA" {% if endereco and endereco.uf == "BA" %}selected{% endif %}>Bahia</option>
+                    <option value="CE" {% if endereco and endereco.uf == "CE" %}selected{% endif %}>Ceará</option>
+                    <option value="DF" {% if endereco and endereco.uf == "DF" %}selected{% endif %}>Distrito Federal</option>
+                    <option value="ES" {% if endereco and endereco.uf == "ES" %}selected{% endif %}>Espírito Santo</option>
+                    <option value="GO" {% if endereco and endereco.uf == "GO" %}selected{% endif %}>Goiás</option>
+                    <option value="MA" {% if endereco and endereco.uf == "MA" %}selected{% endif %}>Maranhão</option>
+                    <option value="MT" {% if endereco and endereco.uf == "MT" %}selected{% endif %}>Mato Grosso</option>
+                    <option value="MS" {% if endereco and endereco.uf == "MS" %}selected{% endif %}>Mato Grosso do Sul</option>
+                    <option value="MG" {% if endereco and endereco.uf == "MG" %}selected{% endif %}>Minas Gerais</option>
+                    <option value="PA" {% if endereco and endereco.uf == "PA" %}selected{% endif %}>Pará</option>
+                    <option value="PB" {% if endereco and endereco.uf == "PB" %}selected{% endif %}>Paraíba</option>
+                    <option value="PR" {% if endereco and endereco.uf == "PR" %}selected{% endif %}>Paraná</option>
+                    <option value="PE" {% if endereco and endereco.uf == "PE" %}selected{% endif %}>Pernambuco</option>
+                    <option value="PI" {% if endereco and endereco.uf == "PI" %}selected{% endif %}>Piauí</option>
+                    <option value="RJ" {% if endereco and endereco.uf == "RJ" %}selected{% endif %}>Rio de Janeiro</option>
+                    <option value="RN" {% if endereco and endereco.uf == "RN" %}selected{% endif %}>Rio Grande do Norte</option>
+                    <option value="RS" {% if endereco and endereco.uf == "RS" %}selected{% endif %}>Rio Grande do Sul</option>
+                    <option value="RO" {% if endereco and endereco.uf == "RO" %}selected{% endif %}>Rondônia</option>
+                    <option value="RR" {% if endereco and endereco.uf == "RR" %}selected{% endif %}>Roraima</option>
+                    <option value="SC" {% if endereco and endereco.uf == "SC" %}selected{% endif %}>Santa Catarina</option>
+                    <option value="SP" {% if endereco and endereco.uf == "SP" %}selected{% endif %}>São Paulo</option>
+                    <option value="SE" {% if endereco and endereco.uf == "SE" %}selected{% endif %}>Sergipe</option>
+                    <option value="TO" {% if endereco and endereco.uf == "TO" %}selected{% endif %}>Tocantins</option>
                 </select>
 
                 <input type="submit" value="{% if endereco%}Editar{% else %}Cadastrar{%endif%} Endereço">

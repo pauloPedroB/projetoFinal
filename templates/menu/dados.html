@@ -30,7 +30,7 @@
     <main class="corpo" style="display: block;">
         <h2>Dados</h2>
         {%if typeUser == 2%}
-        <form action="/loja/editar/{{dados['id_loja']}}" method="post">
+        <form action="/loja/editar/{{dados['id_loja']}}">
             <input type="submit" value="Editar">
         </form>
             <p>CNPJ {{dados['cnpj']}}</p>
@@ -41,7 +41,7 @@
             <p>Abertura {{dados['abertura']}}</p>
         {%endif%}
         {%if typeUser == 3%}
-        <form action="/cliente/editar/{{dados['id_cliente']}}" method="post">
+        <form action="/cliente/editar/{{dados['id_cliente']}}">
             <input type="submit" value="Editar">
         </form>
             <p>CPF {{dados['cpf']}}</p>

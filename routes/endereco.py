@@ -69,12 +69,35 @@ def cadastrar():
 @endereco_bp.route('/editar/<id_endereco>')
 def editar(id_endereco):
     try:
-        verificar = validacoes.verificarCadastro()
-        if verificar:
-            return verificar
-        verificarLojaCliente = validacoes.verificarLojaCliente()
-        if verificarLojaCliente:
-            return verificarLojaCliente
+        cadastro = validacoes.verificarCadastroCompleto()
+        if cadastro:
+            return cadastro
+        
+        if session['typeUser'] == 1:
+            return redirect(url_for('menu.principal',mensagem = "Você não possuí acesso à essa página"))
+        
+        mensagem = request.args.get('mensagem')
+        if mensagem == None:
+            mensagem = ""
+
+        endereco = Endereco.query.get(id_endereco)
+        if not endereco:
+            return redirect(url_for('menu.Principal',mensagem = "Endereço não encontrado"))
+        
+        if endereco.id_usuario != session['user_id']:
+            return redirect(url_for('menu.Principal',mensagem = "Você não tem permissão para editar este endereço"))
+                
+        return render_template('cadastroEnd.html',mensagem = mensagem, endereco = endereco)
+    except Exception as e:
+            return redirect(url_for('menu.principal',mensagem = f"Algo deu errado, tente novamente: {e}"))
+       
+@endereco_bp.route('/update/<id_endereco>',methods=['POST'])
+def update(id_endereco):
+    try:
+        cadastro = validacoes.verificarCadastroCompleto()
+        if cadastro:
+            return cadastro
+
         if session['typeUser'] == 1:
             return redirect(url_for('menu.principal',mensagem = "Você não possuí acesso à essa página"))
         mensagem = request.args.get('mensagem')
@@ -85,28 +108,8 @@ def editar(id_endereco):
         if not endereco:
             return redirect(url_for('menu.Principal',mensagem = "Endereço não encontrado"))
         
-        return render_template('cadastroEnd.html',mensagem = mensagem, endereco = endereco)
-    except Exception as e:
-            return redirect(url_for('menu.principal',mensagem = f"Algo deu errado, tente novamente: {e}"))
-       
-@endereco_bp.route('/update/<id_endereco>',methods=['POST'])
-def update(id_endereco):
-    try:
-        verificar = validacoes.verificarCadastro()
-        if verificar:
-            return verificar
-        verificarLojaCliente = validacoes.verificarLojaCliente()
-        if verificarLojaCliente:
-            return verificarLojaCliente
-        if session['typeUser'] == 1:
-            return redirect(url_for('menu.principal',mensagem = "Você não possuí acesso à essa página"))
-        mensagem = request.args.get('mensagem')
-        if mensagem == None:
-            mensagem = ""
-
-        endereco = Endereco.query.get(id_endereco)
-        if not endereco:
-            return redirect(url_for('menu.Principal',mensagem = "Endereço não encontrado"))
+        if endereco.id_usuario != session['user_id']:
+            return redirect(url_for('menu.Principal',mensagem = "Você não tem permissão para editar este endereço"))
         
         cep = request.form['CEP']
         rua = request.form['rua']

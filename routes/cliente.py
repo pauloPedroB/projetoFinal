@@ -59,4 +59,25 @@ def cadastrar():
     
     except Exception as e:
         return redirect(url_for('cliente.cadastro',mensagem = f"Algo deu errado, tente novamente: {e}"))
+    
+@cliente_bp.route('/editar/<id_cliente>')
+def editar(id_cliente):
+    try:
+        cadastro = validacoes.verificarCadastroCompleto()
+        if cadastro:
+            return cadastro
+        
+        cliente = Cliente.query.get(id_cliente)
+        if not cliente:
+            return redirect(url_for('menu.Principal',mensagem = "Cliente não encontrado"))
+        
+        if cliente.id_usuario != session['user_id']:
+            return redirect(url_for('menu.Principal',mensagem = "Você não tem permissão para editar este Perfil"))
+        
+        mensagem = request.args.get('mensagem')
+        if mensagem == None:
+            mensagem = ""
+        return render_template('cadastroCliente.html',mensagem = mensagem,cliente = cliente)
+    except Exception as e:
+        return redirect(url_for('menu.principal',mensagem = f"Algo deu errado, tente novamente: {e}"))
 

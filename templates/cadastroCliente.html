@@ -11,42 +11,42 @@
 <body>
     <main class="mainLoja">
         <div class="container">
-            <h1>Tela de Cadastro de Cliente</h1>
-            <form action="/cliente/cadastrar" method="post">
+            <h1>Tela de {% if cliente%}Edição{% else %}Cadastro{%endif%} de Cliente</h1>
+            <form action="{% if cliente%}/cliente/update/cliente.id_cliente{% else %}/cliente/cadastrar{%endif%}" method="post">
                 <h3>{{mensagem}}</h3>
                 <label for="CNPJ">CPF</label>
                 <span class="error-message" id="CPFerror"></span>
-                <input type="text" id="CPF" name="CPF" placeholder="CPF: (APENAS NÚMEROS)">
+                <input type="text" id="CPF" name="CPF" placeholder="CPF: (APENAS NÚMEROS)" {% if cliente %} value="{{cliente.cpf}}" disabled {%endif%}>
 
                 <label for="nomeFantasia">Nome Completo</label>
                 <span class="error-message" id="nameError"></span>
-                <input type="text" id="name" name="name">
+                <input type="text" id="name" name="name"  value="{{cliente.nome if cliente else ''}}">
 
                 <label for="telefone">Telefone</label>
                 <span class="error-message" id="telefoneError"></span>
-                <input type="text" id="telefone" name="telefone">
+                <input type="text" id="telefone" name="telefone"  value="{{cliente.telefone if cliente else ''}}">
 
                 <label for="celular">Data de Nascimento</label>
                 <span class="error-message" id="dataError"></span>
-                <input type="date" id="data" name="data">
+                <input type="date" id="data" name="data"  value="{{cliente.dtNascimento if cliente else ''}}">
 
                 <label for="telefone">Genero</label>
                 <span class="error-message" id="generoError"></span>
                 <select name="genero" id="genero">
-                    <option value="1">Masculino</option>
-                    <option value="2">Feminino</option>
-                    <option value="3">Transgenero</option>
-                    <option value="4">Prefiro Não informar</option>
+                    <option value="1" {% if cliente and cliente.genero == "1" %}selected{% endif %}>Masculino</option>
+                    <option value="2" {% if cliente and cliente.genero == "2" %}selected{% endif %}>Feminino</option>
+                    <option value="3" {% if cliente and cliente.genero == "3" %}selected{% endif %}>Transgênero</option>
+                    <option value="4" {% if cliente and cliente.genero == "4" %}selected{% endif %}>Prefiro Não informar</option>
                 </select>
 
                  <label for="telefone">Possuí Carro?</label>
                 <span class="error-message" id="carroError"></span>
                 <select name="carro" id="carro">
-                    <option value="1">Sim</option>
-                    <option value="2">Não</option>
-                    <option value="3">Prefiro Não informar</option>
+                    <option value="1" {% if cliente and cliente.carro == "1" %}selected{% endif %}>Sim</option>
+                    <option value="2" {% if cliente and cliente.carro == "2" %}selected{% endif %}>Não</option>
+                    <option value="3" {% if cliente and cliente.carro == "3" %}selected{% endif %}>Prefiro Não informar</option>
                 </select>
-                <input type="submit" value="Cadastrar Cliente">
+                <input type="submit" value="{% if cliente %}Editar Cliente{% else %}Cadastrar Cliente{% endif %}">
             </form>
         </div>
         <script src="{{ url_for('static', filename='js/creatCliente.js') }}"></script>
