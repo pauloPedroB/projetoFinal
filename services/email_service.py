@@ -41,10 +41,8 @@ def validar(id_token):
         if response.status_code == 200:
             try:
                 resposta_json = response.json()
-                token = resposta_json.get('token')
+                print(resposta_json)
 
-                verificandoUser = requests.get(f"http://localhost:3001/usuarios/verificar/{token['id_user']['email_usuario']}")
-                resposta_json = verificandoUser.json()
 
                 verificado = resposta_json.get('verificado')
 
@@ -60,7 +58,7 @@ def validar(id_token):
             mensagem = resposta_json.get('message')
 
             print(f"Erro no servidor: {mensagem}")
-            return redirect(url_for('auth.inicio', mensagem=f"Erro ao processar o token. Código de erro: {mensagem}"))
+            return redirect(url_for('auth.inicio', mensagem=f"Erro ao processar o token: {mensagem}"))
 
     except Exception as e:
         print(e)

@@ -18,11 +18,11 @@ def verificarCadastroCompleto(mensagem=None):
     if cadastro:
         return cadastro  # Se precisar redirecionar, retorna imediatamente
     
-    lojaCliente = verificarLojaCliente()
+    lojaCliente = verificarLojaCliente(mensagem)
     if lojaCliente:
         return lojaCliente  # Se precisar redirecionar, retorna imediatamente
     
-    endereco = verificarEndereco()
+    endereco = verificarEndereco(mensagem)
     if endereco:
         return endereco  # Se precisar redirecionar, retorna imediatamente
     
@@ -39,11 +39,12 @@ def verificarCadastro(mensagem=None):
 
     return None  # Adicionado para garantir um retorno explícito
 
-def verificarLojaCliente():
-        
+def verificarLojaCliente(mensagem=None):
+    if mensagem == None:
+        mensagem = ""
     usuario = Usuarios.query.filter(Usuarios.id_usuario == session['user_id']).first()
     if usuario.typeUser == None:
-        return redirect(url_for('menu.escolha', mensagem="Cadastre-se como cliente ou loja"))
+        return redirect(url_for('menu.escolha', mensagem=mensagem))
     session['typeUser'] = usuario.typeUser
     
     return None  # Adicionado para evitar retorno implícito de None

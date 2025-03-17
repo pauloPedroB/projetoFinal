@@ -68,6 +68,7 @@ def cadastrar():
         dados_usuario = {
             "email_usuario": email,
             "pass_usuario": senha,
+            "confirm_pass": confirmacao_senha,
         }
         
         response = requests.post(API_URL + "criar/", json=dados_usuario)
@@ -181,23 +182,17 @@ def alterarsenha():
 
         if not verificar_senha:
             return redirect(url_for('auth.senhas',mensagem=mensagem,token = id_token))
+        
+        dados_usuario = {
+            "pass_usuario": senha,
+            "confirm_pass": confirmacao_senha,
+            "id_token": id_token
+        }
+        response = requests.post(API_URL + "resetPass/", json=dados_usuario)
+        resposta_json = response.json()
+        mensagem = resposta_json.get('message')
+        return redirect(url_for('auth.inicio', mensagem=mensagem))
 
-        buscandoToken = requests.get(f"http://localhost:3001/tokens/buscar/{id_token}")
-        resposta_json = buscandoToken.json()
-        if buscandoToken.status_code ==200:
-            token = resposta_json.get('token')
-            response = requests.get(f"http://localhost:3001/tokens/validar/{token['id_token']}/{token['id_user']['id_usuario']}")
-            if(response.status_code == 200):
-                print()
-            else:
-                resposta_json = response.json()
-                mensagem = resposta_json.get('message')
-                return redirect(url_for('auth.inicio', mensagem=mensagem))
-        else:
-            mensagem = resposta_json.get('message')
-            return redirect(url_for('auth.inicio', mensagem=mensagem))
-
-        return redirect(url_for('auth.inicio', mensagem="Senha alterada com sucesso."))
     except Exception as e:
         return redirect(url_for('auth.senhas',mensagem=f"Erro ao tentar alterar senha: {e}",token = id_token))
 
