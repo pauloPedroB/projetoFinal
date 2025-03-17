@@ -11,8 +11,10 @@ from classes import Loja,Cliente,Endereco,Administrador,Usuarios
 from flask import session,redirect,url_for
 
 
-def verificarCadastroCompleto():
-    cadastro = verificarCadastro()
+def verificarCadastroCompleto(mensagem=None):
+    if mensagem == None:
+        mensagem = ""
+    cadastro = verificarCadastro(mensagem)
     if cadastro:
         return cadastro  # Se precisar redirecionar, retorna imediatamente
     
@@ -26,16 +28,19 @@ def verificarCadastroCompleto():
     
     return None  # Se todas as verificações passarem, retorna None explicitamente
 
-def verificarCadastro():
+def verificarCadastro(mensagem=None):
+    if mensagem == None:
+        mensagem = ""
     if 'user_id' not in session:
-        return redirect(url_for('auth.inicio'))
+        return redirect(url_for('auth.inicio',mensagem = mensagem))
     
     if 'user_verificado' not in session or session['user_verificado'] is None:
-        return redirect(url_for('email.verificarEmail'))
+        return redirect(url_for('email.verificarEmail',mensagem = mensagem))
 
     return None  # Adicionado para garantir um retorno explícito
 
 def verificarLojaCliente():
+        
     usuario = Usuarios.query.filter(Usuarios.id_usuario == session['user_id']).first()
     if usuario.typeUser == None:
         return redirect(url_for('menu.escolha', mensagem="Cadastre-se como cliente ou loja"))
@@ -50,11 +55,13 @@ def verificarUsuario():
 
     return None
 
-def verificarEndereco():
+def verificarEndereco(mensagem=None):
+    if mensagem == None:
+        mensagem = ""
     endereco = Endereco.query.filter_by(id_usuario=session['user_id']).first()
     if not endereco:
         if Administrador.query.filter_by(id_usuario=session['user_id']).first() is None:
-            return redirect(url_for('endereco.cadastro'))
+            return redirect(url_for('endereco.cadastro',mensagem = mensagem))
         return None
     session["lat"] = endereco.latitude
     session["long"] = endereco.longitude

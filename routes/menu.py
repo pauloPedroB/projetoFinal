@@ -22,11 +22,12 @@ def escolha():
 @menu_bp.route('/principal')
 def principal():
     try:
-        cadastro = validacoes.verificarCadastroCompleto()
+        mensagem = request.args.get('mensagem', "")
+
+        cadastro = validacoes.verificarCadastroCompleto(mensagem)
         if cadastro:
             return cadastro
         typeUser = session['typeUser']
-        mensagem = request.args.get('mensagem', "")
         pesquisa = request.args.get('pesquisa',"")
         R = 6371
         distancia = None

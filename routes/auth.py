@@ -1,18 +1,25 @@
 # /routes/auth.py
-from flask import Blueprint, render_template, request, redirect, url_for, session
+from flask import Blueprint, render_template, request, redirect, url_for, session,jsonify
 from classes import db, Usuarios, Tokens
 import services.validacoes as validacoes
-from services.email_service import enviarEmail,verificar_expiracao_token
+from services.email_service import enviarEmail
 from werkzeug.security import generate_password_hash, check_password_hash
+import requests
+
 
 
 # Criando o Blueprint de autenticação
 auth_bp = Blueprint('auth', __name__)
 
+
+API_URL = "http://localhost:3001/usuarios/"
+
 # Função auxiliar para verificar login
-def verificarLog():
+def verificarLog(mensagem=None):
+    if mensagem == None:
+        mensagem = ""
     if 'user_id' in session:
-        return redirect(url_for('menu.principal'))
+        return redirect(url_for('menu.principal',mensagem = mensagem))
     return None
 
 
@@ -26,7 +33,7 @@ def inicio():
     if mensagem == None:
         mensagem = ""
 
-    verificar = verificarLog()
+    verificar = verificarLog(mensagem)
     if verificar:
         return verificar
 
@@ -57,50 +64,64 @@ def cadastrar():
 
         if not validacao:
             return redirect(url_for('auth.cadastro', mensagem=mensagem))
-        elif Usuarios.query.filter_by(email_usuario=email).first():
-            return redirect(url_for('auth.cadastro', mensagem="Email já cadastrado!"))
         
-        hashed_password = generate_password_hash(senha)
+        dados_usuario = {
+            "email_usuario": email,
+            "pass_usuario": senha,
+        }
         
-        novo_usuario = Usuarios(email_usuario=email, pass_usuario=hashed_password)
-        db.session.add(novo_usuario)
-        db.session.commit()
+        response = requests.post(API_URL + "criar/", json=dados_usuario)
+        resposta_json = response.json()
+        print(resposta_json)
 
-        session['user_id'] = novo_usuario.id_usuario
-        session['user_email'] = novo_usuario.email_usuario
+        if response.status_code == 201:
+            novo_usuario = resposta_json.get('novo_usuario')
+            session['user_id'] = novo_usuario['id_usuario']
+            session['user_email'] = novo_usuario['email_usuario']
 
-        enviarEmail(1, session['user_id'], session['user_email'])
+            enviarEmail(1, session['user_id'], session['user_email'])
+            return redirect(url_for('menu.escolha'))
         
-        return redirect(url_for('menu.escolha'))
-
-    except:
-        return redirect(url_for('auth.cadastro', mensagem="Erro ao tentar se cadastrar"))
+        else:
+            mensagem = resposta_json.get('message')
+            return redirect(url_for('auth.cadastro', mensagem=mensagem))
+        
+    except Exception as e:
+        return redirect(url_for('auth.cadastro', mensagem=f"Erro ao tentar se cadastrar {e}"))
     
+
 @auth_bp.route('/entrar', methods=['POST'])
 def entrar():
-   try:
+    try:
         verificar = verificarLog()
         if verificar:
             return verificar
         nome = request.form['email']
         senha = request.form['password']
 
-        usuario = Usuarios.query.filter(Usuarios.email_usuario == nome).first()
-        if(usuario):
-            if(check_password_hash(usuario.pass_usuario,senha)):
-                session['user_id'] = usuario.id_usuario
-                session['user_email'] = usuario.email_usuario
-                session['user_verificado'] = usuario.verificado
-                session['typeUser'] = usuario.typeUser
+        dados_usuario = {
+            "email_usuario": nome,
+            "pass_usuario": senha
+        }
+        response = requests.post(API_URL + "login/", json=dados_usuario)
+        resposta_json = response.json()
+        print(resposta_json)
 
-
-                return redirect(url_for('menu.principal'))
-
-            return redirect(url_for('auth.inicio', mensagem='Senha incorreta'))
-        return redirect(url_for('auth.inicio', mensagem='Usuário não encontrado'))
+        if response.status_code == 200:
+            usuario = resposta_json.get('usuario')
+            session['user_id'] = usuario['id_usuario']
+            session['user_email'] = usuario['email_usuario']
+            session['user_verificado'] = usuario['verificado']
+            session['typeUser'] = usuario['typeUser']
+            return redirect(url_for('menu.principal'))
         
-   except:
-        return redirect(url_for('auth.inicio', mensagem='Erro ao tentar acessar o sistema'))
+        else:
+            mensagem = resposta_json.get('message')
+            return redirect(url_for('auth.inicio', mensagem=mensagem))
+    
+    except Exception as e:
+        return redirect(url_for('auth.inicio', mensagem=f'Erro ao tentar acessar o sistema{e}'))
+
     
 @auth_bp.route('/recuperar')
 def recuperar():
@@ -117,12 +138,20 @@ def recuperarsenha():
         if verificar:
             return verificar
         email = request.form['email']
-        usuario = Usuarios.query.filter((Usuarios.email_usuario == email)).first()
-        if(usuario):
-            enviarEmail(2, usuario.id_usuario, usuario.email_usuario)
+        
+        dados_usuario = {
+            "email_usuario": email,
+        }
+        response = requests.post(API_URL + "buscar/", json=dados_usuario)
+        resposta_json = response.json()
+        print(resposta_json)
+        if response.status_code ==200:
+            usuario = resposta_json.get('usuario')
+            enviarEmail(2, usuario['id_usuario'], usuario['email_usuario'])
             return redirect(url_for('auth.inicio', mensagem='Email de recuperação enviada para sua caixa de mensagens'))
         else:
-            return redirect(url_for('auth.inicio', mensagem='Usuário não encontado'))
+            mensagem = resposta_json.get('message')
+            return redirect(url_for('auth.inicio', mensagem=mensagem))
     except Exception as e:
             return redirect(url_for('auth.inicio', mensagem=f'Algo deu errado, tente novamente: {e}'))
 
@@ -153,24 +182,21 @@ def alterarsenha():
         if not verificar_senha:
             return redirect(url_for('auth.senhas',mensagem=mensagem,token = id_token))
 
+        buscandoToken = requests.get(f"http://localhost:3001/tokens/buscar/{id_token}")
+        resposta_json = buscandoToken.json()
+        if buscandoToken.status_code ==200:
+            token = resposta_json.get('token')
+            response = requests.get(f"http://localhost:3001/tokens/validar/{token['id_token']}/{token['id_user']['id_usuario']}")
+            if(response.status_code == 200):
+                
+            else:
+                resposta_json = response.json()
+                mensagem = resposta_json.get('message')
+                return redirect(url_for('auth.inicio', mensagem=mensagem))
+        else:
+            mensagem = resposta_json.get('message')
+            return redirect(url_for('auth.inicio', mensagem=mensagem))
 
-        token = Tokens.query.filter(Tokens.id_token == id_token, Tokens.usado == False).first()
-
-        if not token or verificar_expiracao_token(token)==True:
-            return redirect(url_for('auth.senhas',mensagem="Token inválido ou já utilizado.",token = id_token))
-
-        usuario = Usuarios.query.filter(Usuarios.id_usuario == token.id_user).first()
-
-        if not usuario:
-            return redirect(url_for('auth.senhas',mensagem="Usuário não encontrado",token = id_token))
-
-
-        hashed_password = generate_password_hash(senha)
-        usuario.pass_usuario = hashed_password
-
-        token.usado = True
-        db.session.commit()
-        
         return redirect(url_for('auth.inicio', mensagem="Senha alterada com sucesso."))
     except Exception as e:
         return redirect(url_for('auth.senhas',mensagem=f"Erro ao tentar alterar senha: {e}",token = id_token))

@@ -3,9 +3,11 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import secrets
 import smtplib
-from datetime import datetime, timedelta
 import services.validacoes as validacoes
-from classes import db,Tokens,Usuarios
+from classes import db,Tokens
+import requests
+
+API_URL = "http://localhost:3001/tokens/"
 
 
 
@@ -31,46 +33,64 @@ def enviar():
         return redirect(url_for('auth.inicio'))
 
 
-@email_service.route('/validar/<token>')
-def validar(token):
+@email_service.route('/validar/<id_token>')
+def validar(id_token):
     try:
-        token = Tokens.query.filter(Tokens.id_token == token, Tokens.usado == False).first()
+    
+        response = requests.get(API_URL + f"validar/{id_token}/{session.get('user_id')}")
+        if response.status_code == 200:
+            try:
+                resposta_json = response.json()
+                token = resposta_json.get('token')
 
-        if not token or verificar_expiracao_token(token):
-            return redirect(url_for('email.verificarEmail', mensagem="Token inválido ou já utilizado."))
+                verificandoUser = requests.get(f"http://localhost:3001/usuarios/verificar/{token['id_user']['email_usuario']}")
+                resposta_json = verificandoUser.json()
 
-        usuario = Usuarios.query.filter(Usuarios.id_usuario == token.id_user).first()
+                verificado = resposta_json.get('verificado')
 
-        if not usuario:
-            return redirect(url_for('email.verificarEmail', mensagem="Usuário não encontrado"))
-        
-        if usuario.id_usuario != session.get('user_id'):
-            return redirect(url_for('email.verificarEmail', mensagem="Usuário vinculado ao token não é o mesmo usuário que está acessando o sistema"))
+                session['user_verificado'] = verificado
+                return redirect(url_for('menu.escolha'))
+            
+            except ValueError as e:
+                # Caso a resposta não seja um JSON válido
+                print(f"Resposta não é JSON válido{e}")
+                return redirect(url_for('auth.inicio', mensagem= f"Resposta do servidor não é válida: {e}"))
+        else:
+            resposta_json = response.json()
+            mensagem = resposta_json.get('message')
 
-        usuario.verificado = validacoes.horario_br()
-        token.usado = True
-        db.session.commit()
+            print(f"Erro no servidor: {mensagem}")
+            return redirect(url_for('auth.inicio', mensagem=f"Erro ao processar o token. Código de erro: {mensagem}"))
 
-        session['user_verificado'] = usuario.verificado
+    except Exception as e:
+        print(e)
+        return redirect(url_for('auth.inicio', mensagem=f"Algo deu errado ao procurar o seu token, repita o processo de recuperação: {e}"))
 
-        return redirect(url_for('menu.escolha'))
-    except:
-        return redirect(url_for('auth.inicio', mensagem="Algo deu errado ao procurar o seu token, repita o processo de recuperação"))
+
 
 
 def enviarEmail(metodo, id, email):
-    id_token = gerar_token()
-    horario = validacoes.horario_br()
-    novo_token = Tokens(id_token=id_token, id_user=id, dt_cr=horario, usado=False)
-    if metodo == 1:
-        # Verifica se o usuário já foi verificado; somente retorna se o valor for diferente de None
-        if session.get('user_verificado') is not None:
-            return None
-        enviar_validacao(email, novo_token.id_token)
-    elif metodo == 2:
-        enviar_email_recuperacao(email, novo_token.id_token)
-    db.session.add(novo_token)
-    db.session.commit()
+    dados_usuario = {
+            "id_user": id,
+        }
+    response = requests.post(API_URL + "criar/", json=dados_usuario)
+    resposta_json = response.json()
+
+    if response.status_code == 201:
+        novo_token = resposta_json.get('novo_token')
+        print(novo_token['id_token'],"\n",email,"\n",metodo)
+
+        if metodo == 1:
+            if session.get('user_verificado') is not None:
+                return None
+            enviar_validacao(email, novo_token['id_token'])
+        elif metodo == 2:
+            enviar_email_recuperacao(email, novo_token['id_token'])
+    else:
+        print(response.status_code)
+
+
+
 
 
 def enviar_validacao(email,token):
@@ -143,19 +163,8 @@ def enviar_email_recuperacao(email,token):
 
         return False
     
-def gerar_token(comprimento=32):
-    return secrets.token_hex(comprimento)
 
 
-def verificar_expiracao_token(token):
-    agora = datetime.now()
-    
-    tempo_criacao = token.dt_cr
-    
-    limite = tempo_criacao + timedelta(hours=2)
-    
-    if agora > limite:
-        return True 
-    else:
-        return False
+
+
     
