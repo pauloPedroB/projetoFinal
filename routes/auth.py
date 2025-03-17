@@ -188,7 +188,7 @@ def alterarsenha():
             token = resposta_json.get('token')
             response = requests.get(f"http://localhost:3001/tokens/validar/{token['id_token']}/{token['id_user']['id_usuario']}")
             if(response.status_code == 200):
-                
+                print()
             else:
                 resposta_json = response.json()
                 mensagem = resposta_json.get('message')
