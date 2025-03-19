@@ -12,7 +12,7 @@ def cadastro():
         verificar = validacoes.verificarCadastro()
         if verificar:
             return verificar
-        verificarUsuario = validacoes.verificarUsuario()
+        verificarUsuario,usuario = validacoes.verificarUsuario()
         if verificarUsuario:
             return verificarUsuario
         
@@ -30,7 +30,7 @@ def cadastrar():
         verificar = validacoes.verificarCadastro()
         if verificar:
             return verificar
-        verificarUsuario = validacoes.verificarUsuario()
+        verificarUsuario,usuario = validacoes.verificarUsuario()
         if verificarUsuario:
             return verificarUsuario
         
@@ -47,9 +47,8 @@ def cadastrar():
             return redirect(url_for('loja.cadastro',mensagem = mensagem))
         elif(Loja.query.filter_by(cnpj=cnpj_user).first()):
             return redirect(url_for('loja.cadastro',mensagem = "Já possuí uma loja vinculada com esse CNPJ"))
-        usuario = Usuarios.query.filter(Usuarios.id_usuario == session['user_id']).first()
-        usuario.typeUser = 2
-        session['typeUser'] = usuario.typeUser
+        usuario['typeUser'] = 2
+        session['typeUser'] = usuario['typeUser']
 
         nova_loja = Loja(cnpj=cnpj_user, nomeFantasia = nomeFantasia, razaoSocial = razaoSocial, telefone = telefone, celular = celular, abertura = abertura, id_usuario = session['user_id'])
         db.session.add(nova_loja)

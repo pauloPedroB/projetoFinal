@@ -12,9 +12,9 @@ def cadastro():
         verificar = validacoes.verificarCadastro()
         if verificar:
             return verificar
-        verificarLojaCliente = validacoes.verificarUsuario()
-        if verificarLojaCliente:
-            return verificarLojaCliente
+        verificarUsuario,usuario = validacoes.verificarUsuario()
+        if verificarUsuario:
+            return verificarUsuario
         
         mensagem = request.args.get('mensagem')
         if mensagem == None:
@@ -30,9 +30,9 @@ def cadastrar():
         verificar = validacoes.verificarCadastro()
         if verificar:
             return verificar
-        verificarLojaCliente = validacoes.verificarUsuario()
-        if verificarLojaCliente:
-            return verificarLojaCliente
+        verificarUsuario,usuario = validacoes.verificarUsuario()
+        if verificarUsuario:
+            return verificarUsuario
         cpf = request.form['CPF']
         nome = request.form['name']
         dtNascimento = request.form['data']
@@ -47,9 +47,9 @@ def cadastrar():
             return redirect(url_for('cliente.cadastro',mensagem = mensagem))
         elif(Cliente.query.filter_by(cpf=cpf).first()):
             return redirect(url_for('cliente.cadastro',mensagem = "Já possuí um cliente cadastrado com esse CPF"))
-        usuario = Usuarios.query.filter(Usuarios.id_usuario == session['user_id']).first()
-        usuario.typeUser = 3
-        session['typeUser'] = usuario.typeUser
+        
+        usuario['typeUser'] = 3
+        session['typeUser'] = usuario['typeUser']
 
         
         novo_Cliente = Cliente(cpf=cpf, dtNascimento = dtNascimento, nome = nome, telefone = telefone, genero = genero, carro = carro, id_usuario = session['user_id'])

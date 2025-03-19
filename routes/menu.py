@@ -12,7 +12,7 @@ def escolha():
     if verificar:  
         return verificar
     
-    verificarUsuario = validacoes.verificarUsuario()
+    verificarUsuario,usuario = validacoes.verificarUsuario()
     if verificarUsuario:
         return verificarUsuario
     mensagem = request.args.get('menu/mensagem', "")

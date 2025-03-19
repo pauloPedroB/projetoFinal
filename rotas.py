@@ -19,7 +19,7 @@ app = Flask(__name__)
 UPLOAD_FOLDER = "static/uploads"
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:Victor%4012@localhost:3306/projetoAutomoveis'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://aluno:toor@localhost:3306/projetoAutomoveis'
 app.config['SECRET_KEY'] = 'Chave()1243123'
 
 db.init_app(app)

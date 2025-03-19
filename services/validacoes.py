@@ -63,7 +63,7 @@ def verificarUsuario():
     if usuario['typeUser'] != None:
         return redirect(url_for('menu.principal', mensagem="Esse Usuário já possuí cadastro como Cliente, Loja ou Administrador"))
 
-    return None
+    return None,usuario
 
 def verificarEndereco(mensagem=None):
     if mensagem == None:
