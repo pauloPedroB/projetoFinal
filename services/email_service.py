@@ -1,10 +1,8 @@
 from flask import Blueprint, redirect, url_for, session, request, render_template
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import secrets
 import smtplib
-import services.validacoes as validacoes
-from classes import db,Tokens
+from classes import db
 import requests
 
 API_URL = "http://localhost:3001/tokens/"
@@ -81,9 +79,12 @@ def enviarEmail(metodo, id, email):
         if metodo == 1:
             if session.get('user_verificado') is not None:
                 return None
-            enviar_validacao(email, novo_token['id_token'])
+            email = enviar_validacao(email, novo_token['id_token'])
+            print(email)
         elif metodo == 2:
-            enviar_email_recuperacao(email, novo_token['id_token'])
+            email = enviar_email_recuperacao(email, novo_token['id_token'])
+            print(email)
+
     else:
         print(response.status_code)
 

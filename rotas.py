@@ -1,7 +1,5 @@
 from flask import Flask, render_template, request, session, redirect, url_for,jsonify
-from geopy.distance import geodesic
-import services.validacoes as validacoes
-from classes import db, Endereco
+from classes import db
 
 from routes.auth import auth_bp
 from routes.cliente import cliente_bp
@@ -21,7 +19,7 @@ app = Flask(__name__)
 UPLOAD_FOLDER = "static/uploads"
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://aluno:toor@localhost:3306/projetoAutomoveis'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:Victor%4012@localhost:3306/projetoAutomoveis'
 app.config['SECRET_KEY'] = 'Chave()1243123'
 
 db.init_app(app)

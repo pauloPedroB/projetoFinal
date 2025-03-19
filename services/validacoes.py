@@ -5,10 +5,9 @@ from datetime import datetime
 import pytz
 from geopy.geocoders import Nominatim, OpenCage
 from geopy.exc import GeocoderTimedOut
-from geopy.distance import geodesic
-
 from classes import Loja,Cliente,Endereco,Administrador,Usuarios
 from flask import session,redirect,url_for
+from services.api_services import buscarPorId
 
 
 def verificarCadastroCompleto(mensagem=None):
@@ -40,18 +39,28 @@ def verificarCadastro(mensagem=None):
     return None  # Adicionado para garantir um retorno explícito
 
 def verificarLojaCliente(mensagem=None):
+
     if mensagem == None:
         mensagem = ""
-    usuario = Usuarios.query.filter(Usuarios.id_usuario == session['user_id']).first()
-    if usuario.typeUser == None:
+    
+    usuario,mensagem = buscarPorId(session['user_id'])
+    if usuario == None:
+        session.clear()
+        return redirect(url_for('auth.inicio', mensagem=mensagem))
+
+    if usuario['typeUser'] == None:
         return redirect(url_for('menu.escolha', mensagem=mensagem))
-    session['typeUser'] = usuario.typeUser
+    session['typeUser'] = usuario['typeUser']
     
     return None  # Adicionado para evitar retorno implícito de None
 
 def verificarUsuario():
-    usuario = Usuarios.query.filter(Usuarios.id_usuario == session['user_id']).first()
-    if usuario.typeUser != None:
+    usuario,mensagem  = buscarPorId(session['user_id'])
+    if usuario == None:
+        session.clear()
+        return redirect(url_for('auth.inicio', mensagem=mensagem))
+
+    if usuario['typeUser'] != None:
         return redirect(url_for('menu.principal', mensagem="Esse Usuário já possuí cadastro como Cliente, Loja ou Administrador"))
 
     return None
