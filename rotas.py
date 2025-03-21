@@ -9,7 +9,6 @@ from routes.menu import menu_bp
 from routes.produto import produto_bp
 
 
-from services.email_service import email_service
 from services.apis import apis_bp
 
 
@@ -27,7 +26,6 @@ db.init_app(app)
 app.register_blueprint(auth_bp, url_prefix='/auth')
 app.register_blueprint(cliente_bp, url_prefix='/cliente')
 app.register_blueprint(loja_bp, url_prefix='/loja')
-app.register_blueprint(email_service,url_prefix='/email')
 app.register_blueprint(apis_bp,url_prefix='/apis')
 app.register_blueprint(endereco_bp,url_prefix='/endereco')
 app.register_blueprint(menu_bp,url_prefix='/menu')

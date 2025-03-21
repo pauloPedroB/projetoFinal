@@ -34,7 +34,7 @@ def verificarCadastro(mensagem=None):
         return redirect(url_for('auth.inicio',mensagem = mensagem))
     
     if 'user_verificado' not in session or session['user_verificado'] is None:
-        return redirect(url_for('email.verificarEmail',mensagem = mensagem))
+        return redirect(url_for('auth.verificarEmail',mensagem = mensagem))
 
     return None  # Adicionado para garantir um retorno explícito
 

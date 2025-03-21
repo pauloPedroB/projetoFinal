@@ -1,35 +1,6 @@
-from flask import Blueprint, redirect, url_for, session, request, render_template
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import smtplib
-from classes import db
-
-API_URL = "http://localhost:3001/tokens/"
-
-
-
-email_service = Blueprint('email', __name__)
-
-@email_service.route('/verificarEmail')
-def verificarEmail():
-    if 'user_verificado' in session and session['user_verificado'] is not None:
-        return redirect(url_for('menu.principal'))
-    mensagem = request.args.get('mensagem', "")
-    return render_template('email.html', mensagem=mensagem)
-
-
-@email_service.route('/enviar')
-def enviar():
-    try:
-        if 'user_verificado' in session and session['user_verificado'] is not None:
-            return redirect(url_for('menu.principal'))
-        from controllers.tokenController import criarToken
-        
-        criarToken(1,session['user_id'],session['user_email'])
-        return redirect(url_for('menu.principal'))
-    
-    except:
-        return redirect(url_for('auth.inicio'))
 
 def enviar_validacao(email,token):
     

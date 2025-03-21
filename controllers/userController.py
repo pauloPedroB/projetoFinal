@@ -25,16 +25,17 @@ def buscarPorId(id):
     return usuario,mensagem
 
 def buscarPorEmail(email):
+    print("teste")
     dados_usuario = {
             "email_usuario": email,
         }
-    response = requests.post(API_URL + "buscar/", json=dados_usuario)
+    response = requests.post(API_URL + ROTA_USUARIOS+"buscar/", json=dados_usuario)
     resposta_json = response.json()
     mensagem = resposta_json.get('message')
 
     if response.status_code !=200:
         return None,mensagem
-        
+    
     usuario_api = resposta_json.get('usuario')
 
     usuario = Usuario(id_usuario=usuario_api["id_usuario"],

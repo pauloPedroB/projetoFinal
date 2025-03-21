@@ -1,13 +1,11 @@
 # /routes/auth.py
-from flask import Blueprint, render_template, request, redirect, url_for, session,jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, session
 import services.validacoes as validacoes
 from controllers.userController import criarUsuario,login,buscarPorEmail,resetarSenha
 from controllers.tokenController import criarToken,validarToken
 
 # Criando o Blueprint de autenticação
 auth_bp = Blueprint('auth', __name__)
-
-
 
 # Função auxiliar para verificar login
 def verificarLog(mensagem=None):
@@ -97,6 +95,27 @@ def entrar():
     
     except Exception as e:
         return redirect(url_for('auth.inicio', mensagem=f'Erro ao tentar acessar o sistema{e}'))
+
+@auth_bp.route('/verificarEmail')
+def verificarEmail():
+    if 'user_verificado' in session and session['user_verificado'] is not None:
+        return redirect(url_for('menu.principal'))
+    mensagem = request.args.get('mensagem', "")
+    return render_template('email.html', mensagem=mensagem)
+
+    
+@auth_bp.route('/enviar')
+def enviar():
+    try:
+        if 'user_verificado' in session and session['user_verificado'] is not None:
+            return redirect(url_for('menu.principal'))
+        from controllers.tokenController import criarToken
+        
+        criarToken(1,session['user_id'],session['user_email'])
+        return redirect(url_for('menu.principal'))
+    
+    except:
+        return redirect(url_for('auth.inicio'))
     
 @auth_bp.route('/validar/<id_token>')
 def validar(id_token):
