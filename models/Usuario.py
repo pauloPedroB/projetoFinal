@@ -1,6 +1,6 @@
 from datetime import datetime
 
-class Usuario():
+class Usuario(object):
     id_usuario = int
     email_usuario = str(120)
     pass_usuario = str(300)

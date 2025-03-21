@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
-from classes import db,Loja,Usuarios,Cliente,Endereco,Administrador,Produto,Produto_Loja
+from classes import db,Loja,Cliente,Endereco,Administrador,Produto,Produto_Loja
 from sqlalchemy import func
 import services.validacoes as validacoes
 menu_bp = Blueprint('menu', __name__)

@@ -1,15 +1,14 @@
 import requests
 from models.Usuario import Usuario
 
-API_URL = "http://localhost:3001/"
-ROTA_USUARIOS = 'usuarios/'
+API_URL = "http://localhost:3001/usuarios/"
 
 def buscarPorId(id):
     dados_usuario = {
             "id_user": id,
         }
     
-    response = requests.post(API_URL + ROTA_USUARIOS +"id/", json=dados_usuario)
+    response = requests.post(API_URL +"id/", json=dados_usuario)
     resposta_json = response.json()
     mensagem = resposta_json.get('message')
     if response.status_code != 200:
@@ -29,7 +28,7 @@ def buscarPorEmail(email):
     dados_usuario = {
             "email_usuario": email,
         }
-    response = requests.post(API_URL + ROTA_USUARIOS+"buscar/", json=dados_usuario)
+    response = requests.post(API_URL +"buscar/", json=dados_usuario)
     resposta_json = response.json()
     mensagem = resposta_json.get('message')
 
@@ -53,7 +52,7 @@ def criarUsuario(email,senha,confirmacao_senha):
             "confirm_pass": confirmacao_senha,
         }
     
-    response = requests.post(API_URL + ROTA_USUARIOS + "criar/", json=dados_usuario)
+    response = requests.post(API_URL  + "criar/", json=dados_usuario)
     resposta_json = response.json()
     mensagem = resposta_json.get('message')
     if response.status_code != 201:
@@ -74,7 +73,7 @@ def login(email,senha):
         "email_usuario": email,
         "pass_usuario": senha
     }
-    response = requests.post(API_URL+ ROTA_USUARIOS + "login/", json=dados_usuario)
+    response = requests.post(API_URL + "login/", json=dados_usuario)
     resposta_json = response.json()
     mensagem = resposta_json.get('message')
 
@@ -98,7 +97,20 @@ def resetarSenha(senha, confirmacao_senha, id_token):
             "confirm_pass": confirmacao_senha,
             "id_token": id_token
         }
-    response = requests.post(API_URL + ROTA_USUARIOS + "resetPass/", json=dados_usuario)
+    response = requests.post(API_URL  + "resetPass/", json=dados_usuario)
+    resposta_json = response.json()
+    mensagem = resposta_json.get('message')
+    if response.status_code != 201:
+        return False, mensagem
+    return True, mensagem
+
+def alterarTipo(usuario):
+
+    dados_usuario = {
+            "typeUser": usuario.typeUser,
+            "id_user": usuario.id_usuario,
+        }
+    response = requests.post(API_URL  + "Atualizar/Tipo/", json=dados_usuario)
     resposta_json = response.json()
     mensagem = resposta_json.get('message')
     if response.status_code != 201:

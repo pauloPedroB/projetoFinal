@@ -2,7 +2,7 @@ from datetime import datetime
 from models.Usuario import Usuario
 
 
-class Token():
+class Token(object):
     id_token = int
     dt_cr = datetime
     usado = bool

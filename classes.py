@@ -1,22 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
-
+from models import Usuario
+from controllers.userController import buscarPorId
 db = SQLAlchemy()
-
-class Usuarios(db.Model):
-    __tablename__ = 'usuarios'
-
-    id_usuario = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    email_usuario = db.Column(db.String(120), unique=True, nullable=False)
-    pass_usuario = db.Column(db.String(300), nullable=False)
-    verificado = db.Column(db.DateTime, nullable=False)
-    tokens = db.relationship('Tokens', backref='usuario', cascade="all, delete-orphan")
-    Loja = db.relationship('Loja', backref='usuario', cascade="all, delete-orphan")
-    Cliente = db.relationship('Cliente', backref='usuario', cascade="all, delete-orphan")
-    typeUser = db.Column(db.Integer, nullable=True)
-
-
-    def __repr__(self):
-        return f'<Usuario {self.email_usuario}>'
 
 class Endereco(db.Model):
     __tablename__ = 'enderecos'
@@ -30,23 +15,19 @@ class Endereco(db.Model):
     nmr = db.Column(db.Integer, nullable=False)
     latitude = db.Column(db.String(50), nullable=False)
     longitude = db.Column(db.String(50), nullable=False)
-    id_usuario = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), nullable=False)
+    id_usuario = db.Column(db.Integer, unique=True, nullable=False)
+
+    _usuario_obj = None  # Cache para armazenar o usuário
+
+    @property
+    def usuario(self):
+        """Busca os dados do usuário na API apenas na primeira vez."""
+        if self._usuario_obj is None:
+            self._usuario_obj, _ = buscarPorId(self.id_usuario)  # Busca usuário na API
+        return self._usuario_obj
 
     def __repr__(self):
         return f'<Endereco {self.rua}>'
-
-class Tokens(db.Model):
-    __tablename__ = 'tokens'
-
-    id_token = db.Column(db.String(300), primary_key=True, nullable=False)
-    dt_cr = db.Column(db.DateTime, nullable=False)
-    usado = db.Column(db.Boolean, default=False, nullable=False)
-
-    id_user = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), nullable=False)
-
-    def __repr__(self):
-        return f'<Token {self.id_token}>'
-    
 
 class Loja(db.Model):
     __tablename__ = 'lojas'
@@ -59,7 +40,16 @@ class Loja(db.Model):
     celular = db.Column(db.String(20), nullable=True)
     abertura = db.Column(db.Date, nullable=False)
 
-    id_usuario = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), nullable=False)
+    id_usuario = db.Column(db.Integer, unique=True, nullable=False)
+
+    _usuario_obj = None  # Cache para armazenar o usuário
+
+    @property
+    def usuario(self):
+        """Busca os dados do usuário na API apenas na primeira vez."""
+        if self._usuario_obj is None:
+            self._usuario_obj, _ = buscarPorId(self.id_usuario)  # Busca usuário na API
+        return self._usuario_obj
 
     def __repr__(self):
         return f'<Loja {self.cnpj}>'
@@ -74,12 +64,20 @@ class Cliente(db.Model):
     dtNascimento = db.Column(db.Date, nullable=False)
     genero = db.Column(db.Integer, nullable=False)
     carro = db.Column(db.Integer, nullable=False)
-    
 
-    id_usuario = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), nullable=False)
+    id_usuario = db.Column(db.Integer, unique=True, nullable=False)
+
+    _usuario_obj = None  # Cache para armazenar o usuário
+
+    @property
+    def usuario(self):
+        """Busca os dados do usuário na API apenas na primeira vez."""
+        if self._usuario_obj is None:
+            self._usuario_obj, _ = buscarPorId(self.id_usuario)  # Busca usuário na API
+        return self._usuario_obj
 
     def __repr__(self):
-        return f'<Cliente {self.cpf}>'
+        return f'<Cliente {self.nome} (Usuário: {self.usuario.email_usuario if self.usuario else "Não encontrado"})>'
 
 class Administrador(db.Model):
     __tablename__ = 'administradores'
@@ -87,7 +85,16 @@ class Administrador(db.Model):
     id_adm = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nome = db.Column(db.String(65), nullable=False)
 
-    id_usuario = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), nullable=False)
+    id_usuario = db.Column(db.Integer, unique=True, nullable=False)
+
+    _usuario_obj = None  # Cache para armazenar o usuário
+
+    @property
+    def usuario(self):
+        """Busca os dados do usuário na API apenas na primeira vez."""
+        if self._usuario_obj is None:
+            self._usuario_obj, _ = buscarPorId(self.id_usuario)  # Busca usuário na API
+        return self._usuario_obj
 
     def __repr__(self):
         return f'<Administrador {self.id_adm}>'

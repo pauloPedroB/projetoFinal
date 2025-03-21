@@ -3,6 +3,7 @@ from classes import db,Loja,Produto,Produto_Loja,Endereco
 import re
 import services.validacoes as validacoes
 from geopy.distance import geodesic
+from controllers.userController import alterarTipo
 
 loja_bp = Blueprint('loja', __name__)
 
@@ -48,9 +49,12 @@ def cadastrar():
         elif(Loja.query.filter_by(cnpj=cnpj_user).first()):
             return redirect(url_for('loja.cadastro',mensagem = "Já possuí uma loja vinculada com esse CNPJ"))
         usuario.typeUser = 2
+        retorno, mensagem = alterarTipo(usuario)
+        if(retorno == False):
+            return redirect(url_for('cliente.cadastro',mensagem = f"Não foi possível vincular seu usuário a uma loja, {mensagem}"))
         session['typeUser'] = usuario.typeUser
 
-        nova_loja = Loja(cnpj=cnpj_user, nomeFantasia = nomeFantasia, razaoSocial = razaoSocial, telefone = telefone, celular = celular, abertura = abertura, id_usuario = session['user_id'])
+        nova_loja = Loja(cnpj=cnpj_user, nomeFantasia = nomeFantasia, razaoSocial = razaoSocial, telefone = telefone, celular = celular, abertura = abertura, id_usuario = usuario.id_usuario)
         db.session.add(nova_loja)
         db.session.commit()
 
