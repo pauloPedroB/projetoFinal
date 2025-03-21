@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
-from classes import db, Cliente,Usuarios
+from classes import db, Cliente
 import re
 import services.validacoes as validacoes
 
@@ -48,8 +48,8 @@ def cadastrar():
         elif(Cliente.query.filter_by(cpf=cpf).first()):
             return redirect(url_for('cliente.cadastro',mensagem = "Já possuí um cliente cadastrado com esse CPF"))
         
-        usuario['typeUser'] = 3
-        session['typeUser'] = usuario['typeUser']
+        usuario.typeUser = 3
+        session['typeUser'] = usuario.typeUser
 
         
         novo_Cliente = Cliente(cpf=cpf, dtNascimento = dtNascimento, nome = nome, telefone = telefone, genero = genero, carro = carro, id_usuario = session['user_id'])

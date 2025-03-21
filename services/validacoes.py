@@ -5,9 +5,9 @@ from datetime import datetime
 import pytz
 from geopy.geocoders import Nominatim, OpenCage
 from geopy.exc import GeocoderTimedOut
-from classes import Loja,Cliente,Endereco,Administrador,Usuarios
+from classes import Endereco,Administrador
 from flask import session,redirect,url_for
-from services.api_services import buscarPorId
+from controllers.userController import buscarPorId
 
 
 def verificarCadastroCompleto(mensagem=None):
@@ -48,9 +48,9 @@ def verificarLojaCliente(mensagem=None):
         session.clear()
         return redirect(url_for('auth.inicio', mensagem=mensagem))
 
-    if usuario['typeUser'] == None:
+    if usuario.typeUser == None:
         return redirect(url_for('menu.escolha', mensagem=mensagem))
-    session['typeUser'] = usuario['typeUser']
+    session['typeUser'] = usuario.typeUser
     
     return None  # Adicionado para evitar retorno implícito de None
 
@@ -60,7 +60,7 @@ def verificarUsuario():
         session.clear()
         return redirect(url_for('auth.inicio', mensagem=mensagem))
 
-    if usuario['typeUser'] != None:
+    if usuario.typeUser != None:
         return redirect(url_for('menu.principal', mensagem="Esse Usuário já possuí cadastro como Cliente, Loja ou Administrador"))
 
     return None,usuario

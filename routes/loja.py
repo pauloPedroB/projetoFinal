@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
-from classes import db,Loja,Usuarios,Produto,Produto_Loja,Endereco
+from classes import db,Loja,Produto,Produto_Loja,Endereco
 import re
 import services.validacoes as validacoes
 from geopy.distance import geodesic
@@ -47,8 +47,8 @@ def cadastrar():
             return redirect(url_for('loja.cadastro',mensagem = mensagem))
         elif(Loja.query.filter_by(cnpj=cnpj_user).first()):
             return redirect(url_for('loja.cadastro',mensagem = "Já possuí uma loja vinculada com esse CNPJ"))
-        usuario['typeUser'] = 2
-        session['typeUser'] = usuario['typeUser']
+        usuario.typeUser = 2
+        session['typeUser'] = usuario.typeUser
 
         nova_loja = Loja(cnpj=cnpj_user, nomeFantasia = nomeFantasia, razaoSocial = razaoSocial, telefone = telefone, celular = celular, abertura = abertura, id_usuario = session['user_id'])
         db.session.add(nova_loja)

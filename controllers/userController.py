@@ -1,10 +1,8 @@
 import requests
-from flask import session,redirect,url_for
-from services.email_service import enviarEmail
+from models.Usuario import Usuario
 
 API_URL = "http://localhost:3001/"
 ROTA_USUARIOS = 'usuarios/'
-
 
 def buscarPorId(id):
     dados_usuario = {
@@ -16,11 +14,17 @@ def buscarPorId(id):
     mensagem = resposta_json.get('message')
     if response.status_code != 200:
         return None,mensagem
-    usuario = resposta_json.get('usuario')
+    usuario_api = resposta_json.get('usuario')
+
+    usuario = Usuario(id_usuario=usuario_api["id_usuario"],
+                      email_usuario=usuario_api["email_usuario"],
+                      pass_usuario=usuario_api["pass_usuario"],
+                      verificado=usuario_api["verificado"],
+                      typeUser = usuario_api["typeUser"])
+    
     return usuario,mensagem
 
 def buscarPorEmail(email):
-    
     dados_usuario = {
             "email_usuario": email,
         }
@@ -28,11 +32,18 @@ def buscarPorEmail(email):
     resposta_json = response.json()
     mensagem = resposta_json.get('message')
 
-    if response.status_code ==200:
-        usuario = resposta_json.get('usuario')
-        return usuario,mensagem
-    else:
+    if response.status_code !=200:
         return None,mensagem
+        
+    usuario_api = resposta_json.get('usuario')
+
+    usuario = Usuario(id_usuario=usuario_api["id_usuario"],
+                      email_usuario=usuario_api["email_usuario"],
+                      pass_usuario=usuario_api["pass_usuario"],
+                      verificado=usuario_api["verificado"],
+                      typeUser = usuario_api["typeUser"])
+    
+    return usuario,mensagem
 
 def criarUsuario(email,senha,confirmacao_senha):
     dados_usuario = {
@@ -44,13 +55,18 @@ def criarUsuario(email,senha,confirmacao_senha):
     response = requests.post(API_URL + ROTA_USUARIOS + "criar/", json=dados_usuario)
     resposta_json = response.json()
     mensagem = resposta_json.get('message')
-    if response.status_code == 201:
-            novo_usuario = resposta_json.get('novo_usuario')
-            return novo_usuario, mensagem
-    else:
+    if response.status_code != 201:
         return None,mensagem
     
-
+    usuario_api = resposta_json.get('novo_usuario')
+    novo_usuario = Usuario(id_usuario=usuario_api["id_usuario"],
+                      email_usuario=usuario_api["email_usuario"],
+                      pass_usuario=usuario_api["pass_usuario"],
+                      verificado=usuario_api["verificado"],
+                      typeUser = usuario_api["typeUser"])
+    
+    return novo_usuario, mensagem
+    
 def login(email,senha):
     
     dados_usuario = {
@@ -61,14 +77,18 @@ def login(email,senha):
     resposta_json = response.json()
     mensagem = resposta_json.get('message')
 
-    if response.status_code == 200:
-        usuario = resposta_json.get('usuario')
-        
-        return usuario,mensagem
-    
-    else:
-
+    if response.status_code != 200:
         return None,mensagem
+    
+    usuario_api = resposta_json.get('usuario')
+
+    usuario = Usuario(id_usuario=usuario_api["id_usuario"],
+                      email_usuario=usuario_api["email_usuario"],
+                      pass_usuario=usuario_api["pass_usuario"],
+                      verificado=usuario_api["verificado"],
+                      typeUser = usuario_api["typeUser"])
+    
+    return usuario,mensagem
     
 def resetarSenha(senha, confirmacao_senha, id_token):
 
@@ -83,4 +103,3 @@ def resetarSenha(senha, confirmacao_senha, id_token):
     if response.status_code != 201:
         return False, mensagem
     return True, mensagem
-

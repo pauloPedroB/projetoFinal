@@ -3,7 +3,6 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import smtplib
 from classes import db
-import requests
 
 API_URL = "http://localhost:3001/tokens/"
 
@@ -24,73 +23,13 @@ def enviar():
     try:
         if 'user_verificado' in session and session['user_verificado'] is not None:
             return redirect(url_for('menu.principal'))
-        enviarEmail(1,session['user_id'],session['user_email'])
+        from controllers.tokenController import criarToken
+        
+        criarToken(1,session['user_id'],session['user_email'])
         return redirect(url_for('menu.principal'))
     
     except:
         return redirect(url_for('auth.inicio'))
-
-
-@email_service.route('/validar/<id_token>')
-def validar(id_token):
-    try:
-    
-        response = requests.get(API_URL + f"validar/{id_token}/{session.get('user_id')}")
-        if response.status_code == 200:
-            try:
-                resposta_json = response.json()
-                print(resposta_json)
-
-
-                verificado = resposta_json.get('verificado')
-
-                session['user_verificado'] = verificado
-                return redirect(url_for('menu.escolha'))
-            
-            except ValueError as e:
-                # Caso a resposta não seja um JSON válido
-                print(f"Resposta não é JSON válido{e}")
-                return redirect(url_for('auth.inicio', mensagem= f"Resposta do servidor não é válida: {e}"))
-        else:
-            resposta_json = response.json()
-            mensagem = resposta_json.get('message')
-
-            print(f"Erro no servidor: {mensagem}")
-            return redirect(url_for('auth.inicio', mensagem=f"Erro ao processar o token: {mensagem}"))
-
-    except Exception as e:
-        print(e)
-        return redirect(url_for('auth.inicio', mensagem=f"Algo deu errado ao procurar o seu token, repita o processo de recuperação: {e}"))
-
-
-
-
-def enviarEmail(metodo, id, email):
-    dados_usuario = {
-            "id_user": id,
-        }
-    response = requests.post(API_URL + "criar/", json=dados_usuario)
-    resposta_json = response.json()
-
-    if response.status_code == 201:
-        novo_token = resposta_json.get('novo_token')
-        print(novo_token['id_token'],"\n",email,"\n",metodo)
-
-        if metodo == 1:
-            if session.get('user_verificado') is not None:
-                return None
-            email = enviar_validacao(email, novo_token['id_token'])
-            print(email)
-        elif metodo == 2:
-            email = enviar_email_recuperacao(email, novo_token['id_token'])
-            print(email)
-
-    else:
-        print(response.status_code)
-
-
-
-
 
 def enviar_validacao(email,token):
     
@@ -101,7 +40,7 @@ def enviar_validacao(email,token):
     <br></br>
     Se você está tentando se cadastrar, clique nest link:
     <br></br>
-    http://127.0.0.1:5000/email/validar/{token}
+    http://127.0.0.1:5000/auth/validar/{token}
     <br></br>
     Este link é válido por 2 horas.
     """

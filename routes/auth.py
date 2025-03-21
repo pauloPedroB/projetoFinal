@@ -1,10 +1,8 @@
 # /routes/auth.py
 from flask import Blueprint, render_template, request, redirect, url_for, session,jsonify
 import services.validacoes as validacoes
-from services.email_service import enviarEmail
-import requests
-from services.api_services import criarUsuario,login,buscarPorEmail,resetarSenha
-
+from controllers.userController import criarUsuario,login,buscarPorEmail,resetarSenha
+from controllers.tokenController import criarToken,validarToken
 
 # Criando o Blueprint de autenticação
 auth_bp = Blueprint('auth', __name__)
@@ -66,9 +64,9 @@ def cadastrar():
         
         if novo_usuario == None:
             return redirect(url_for('auth.cadastro', mensagem=mensagem))
-        session['user_id'] = novo_usuario['id_usuario']
-        session['user_email'] = novo_usuario['email_usuario']
-        enviarEmail(1, session['user_id'], session['user_email'])
+        session['user_id'] = novo_usuario.id_usuario
+        session['user_email'] = novo_usuario.email_usuario
+        mensagem = criarToken(1, session['user_id'], session['user_email'])
 
         return redirect(url_for('menu.escolha',mensagem))
             
@@ -90,15 +88,29 @@ def entrar():
         if usuario == None:
             return redirect(url_for('auth.inicio', mensagem=mensagem))
 
-        session['user_id'] = usuario['id_usuario']
-        session['user_email'] = usuario['email_usuario']
-        session['user_verificado'] = usuario['verificado']
-        session['typeUser'] = usuario['typeUser']
-        return redirect(url_for('menu.principal',mensagem))
+        session['user_id'] = usuario.id_usuario
+        session['user_email'] = usuario.email_usuario
+        session['user_verificado'] = usuario.verificado
+        session['typeUser'] = usuario.typeUser
+        return redirect(url_for('menu.principal',mensagem = mensagem))
         
     
     except Exception as e:
         return redirect(url_for('auth.inicio', mensagem=f'Erro ao tentar acessar o sistema{e}'))
+    
+@auth_bp.route('/validar/<id_token>')
+def validar(id_token):
+    try:
+        retorno, mensagem = validarToken(id_token,session['user_id'])
+        if retorno == False:
+            return redirect(url_for('auth.inicio', mensagem=f"Erro ao processar o token: {mensagem}"))
+
+        session['user_verificado'] = mensagem
+        return redirect(url_for('menu.escolha'))
+
+    except Exception as e:
+        print(e)
+        return redirect(url_for('auth.inicio', mensagem=f"Algo deu errado ao procurar o seu token, repita o processo de recuperação: {e}"))
 
     
 @auth_bp.route('/recuperar')
@@ -120,13 +132,13 @@ def recuperarsenha():
         usuario,mensagem = buscarPorEmail(email)
         if usuario == None:
             return redirect(url_for('auth.inicio', mensagem=mensagem))
-        enviarEmail(2, usuario['id_usuario'], usuario['email_usuario'])
+        mensagem = criarToken(2, usuario.id_usuario, usuario.email_usuario)
         return redirect(url_for('auth.inicio', mensagem='Email de recuperação enviada para sua caixa de mensagens'))
     
     except Exception as e:
             return redirect(url_for('auth.inicio', mensagem=f'Algo deu errado, tente novamente: {e}'))
 
-        
+    
 
 
 @auth_bp.route('/recuperar/<token>')
