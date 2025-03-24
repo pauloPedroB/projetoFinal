@@ -103,7 +103,8 @@ class Produto(db.Model):
     __tablename__ = 'produtos'
 
     id_produto = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    nome_produto = db.Column(db.String(100), nullable=False)
+    nome_produto = db.Column(db.String(150), nullable=False)
+    categoria = db.Column(db.String(50), nullable=False)
     img = db.Column(db.String(300), nullable=False)
 
 

@@ -1,6 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session,current_app
 from classes import db,Produto,Produto_Loja,Loja
 import os
+from sqlalchemy import func
+
 
 import services.validacoes as validacoes
 produto_bp = Blueprint('produto', __name__)
@@ -18,7 +20,7 @@ def produtos():
             
         mensagem = request.args.get('mensagem', "")
 
-        produtos = Produto.query.all()
+        produtos = Produto.query.order_by(func.random()).limit(20).all()
         produtos_loja = None
         if typeUser == 2:
             loja = Loja.query.filter_by(id_usuario=session['user_id']).first()

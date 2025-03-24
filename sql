@@ -7,7 +7,7 @@ id_usuario int auto_increment primary key,
 email_usuario varchar(120) unique not null,
 pass_usuario varchar(300) not null,
 verificado datetime,
-typeUser int
+typeUser int null
 );
 
 create table enderecos(
@@ -67,7 +67,8 @@ foreign key(id_usuario) references usuarios(id_usuario)
 
 create table produtos(
 id_produto int auto_increment primary key,
-nome_produto varchar(100),
+nome_produto varchar(150),
+descricao varchar(600),
 img varchar(300)
 );
 
@@ -78,8 +79,10 @@ id_loja int,
 foreign key(id_produto) references produtos(id_produto),
 foreign key(id_loja) references lojas(id_loja)
 );
+select * from produtos;
 
-insert into usuarios (email_usuario,pass_usuario,verificado,typeUser) values("adminColiseu@admin.com","scrypt:32768:8:1$nKTOXJJkBoS7HPUL$a7c935018385ecf3de772a227d81272487a188803cec73d4296fb6abc688ccdbdb174e46a0d5c9a537912dd510d62dab472c78651dff95378d31189a6eaaf7e4","20250303",1);
+
+insert into usuarios (email_usuario,pass_usuario,verificado,typeUser) values("adminColiseu@admin.com","$2b$10$BnWF6mS/AuZp//2B67uMiO8XlbrIZE1pSch7zh04lMptxQdbrXxNq","20250303",1);
 update usuarios set typeUser = 1 where id_usuario = 1;
 insert into administradores (nome, id_usuario) values ("Pedro", 1);
 
