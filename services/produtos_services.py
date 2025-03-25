@@ -6,7 +6,17 @@ from urllib.parse import urljoin
 
 import mysql.connector
 
-# Configuração do banco de dados MySQL
+
+
+def extrair_nome_meio(url):
+    padrao = r"https?://(?:www\.)?jocar\.com\.br/([^/]+)/"
+    resultado = re.search(padrao, url)
+    
+    if resultado:
+        return resultado.group(1)  # Retorna o nome do meio
+    else:
+        return None
+
 db = mysql.connector.connect(
     host="localhost",
     user="root",
@@ -16,32 +26,24 @@ db = mysql.connector.connect(
 cursor = db.cursor()
 
 
-# Criar pasta para salvar as imagens
 pasta_imagens = "static/uploads/"
 os.makedirs(pasta_imagens, exist_ok=True)
 
-# URL da página
 url = "https://www.jocar.com.br/"
 
-# Fazer a requisição HTTP
 response = requests.get(url)
 html = response.text
 
-# Criar o objeto BeautifulSoup
 soup = BeautifulSoup(html, "html.parser")
 
-# Encontrar todas as ul com a classe 'submenu3'
 submenus = soup.find_all("ul", class_="submenu3")
 
-# Lista para armazenar os links
 links = []
 
-# Percorrer todas as ul encontradas e extrair os links
 for submenu in submenus:
     for a in submenu.find_all("a", href=True):
         links.append(a["href"])
 
-# Pegando um link de categoria
 for link in links:
 
     response_link = requests.get(link)
@@ -64,9 +66,13 @@ for link in links:
         nome = nome_tag.text.strip() if nome_tag else "Nome não encontrado"
 
         # Normalizando o nome do arquivo
-        nome_arquivo = nome[:150]  # Remove caracteres inválidos e limita tamanho
+        nome_arquivo = re.sub(r'[^a-zA-Z0-9 _-]','',nome)[:150]  
         caminho_imagem = os.path.join(pasta_imagens, f"{nome_arquivo}.jpg")
 
+        if os.path.exists(caminho_imagem):
+            print(f"Imagem já existe: {caminho_imagem}")
+            continue  # Pula o download e não insere no banco
+        
         # Baixar e salvar a imagem
         if img_src:
             try:
@@ -75,8 +81,8 @@ for link in links:
                     with open(caminho_imagem, "wb") as file:
                         for chunk in response_img.iter_content(1024):
                             file.write(chunk)
-                    cursor.execute("INSERT INTO produtos (nome_produto, img) VALUES (%s, %s)", 
-                    (nome_arquivo, nome_arquivo+".jpg"))
+                    cursor.execute("INSERT INTO produtos (nome_produto, img,categoria) VALUES (%s, %s,%s)", 
+                    (nome_arquivo, nome_arquivo+".jpg",extrair_nome_meio(link)))
                     db.commit()
 
                     print(f"Produto Salvo: {caminho_imagem}")
@@ -85,4 +91,7 @@ for link in links:
                     print(f"Erro ao baixar imagem: {img_src}")
             except Exception as e:
                 print(f"Erro ao salvar imagem {img_src}: {e}")
+
+
+
 

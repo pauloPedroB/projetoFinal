@@ -33,7 +33,15 @@
     </div>
     {% endif %}
     <form action="/menu/principal" method="get">
-        <input type="text" placeholder="Pesquisar..." id="pesquisa" name="pesquisa">
+        <select name="categoria" id="categoria">
+            <option value="0">Todas</option>
+            {%for cat in categorias%}
+                <option value="{{cat}}">{{cat}}</option>
+            {%endfor%}
+            <option value=""></option>
+        </select>
+        <input type="text" placeholder="Pesquisar..." id="pesquisa" name="pesquisa" value="pesquisa">
+        <input type="submit" value="Pesquisar">
     </form>
     <main class="corpo">
 

@@ -68,8 +68,10 @@ def principal():
             .order_by(func.random()) \
             .limit(20) \
             .all()
+        categorias = db.session.query(Produto.categoria).distinct().all()
+        categorias_unicas = [c[0] for c in categorias]
             
-        return render_template('menu/menu.html', mensagem=mensagem,typeUser = typeUser,produtos_lojas = produtos_lojas,pesquisa = pesquisa)
+        return render_template('menu/menu.html', mensagem=mensagem,typeUser = typeUser,produtos_lojas = produtos_lojas,pesquisa = pesquisa,categorias = categorias_unicas)
 
     except Exception as e:
         session.clear()
