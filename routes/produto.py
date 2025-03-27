@@ -2,11 +2,43 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from classes import db,Produto,Produto_Loja,Loja
 import os
 from sqlalchemy import func
+import string
+from sqlalchemy import or_
+import nltk
+from nltk.corpus import stopwords
+
+
+nltk.download('stopwords')
 
 
 import services.validacoes as validacoes
 produto_bp = Blueprint('produto', __name__)
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+def pesquisar(pesquisa, categoria = None):
+    #Removendo pontuações
+    pesquisa = pesquisa.translate(str.maketrans('', '', string.punctuation))
+
+    palavras = pesquisa.split()
+    stop_words = set(stopwords.words('portuguese'))
+    print(stop_words)
+    palavras_filtradas = [palavra for palavra in palavras if palavra.lower() not in stop_words]
+    print(palavras_filtradas)
+
+    filtros = [Produto.nome_produto.ilike(f"%{palavra}%") for palavra in palavras_filtradas]
+
+    
+    if(categoria == None):
+        produtos = Produto.query.filter(or_(*filtros)).limit(100).all()
+    else:
+        produtos = Produto.query.filter(or_(*filtros),Produto.categoria == categoria).limit(100).all()
+
+    def contar_correspondencias(produto, palavras_filtradas):
+        return sum(1 for palavra in palavras_filtradas if palavra.lower() in produto.nome_produto.lower())
+
+    # Ordena os produtos pela quantidade de correspondências, do maior para o menor
+    produtos = sorted(produtos, key=lambda p: contar_correspondencias(p, palavras_filtradas), reverse=True)
+    return produtos
 
 @produto_bp.route('/produtos')
 def produtos():
@@ -22,23 +54,13 @@ def produtos():
         pesquisa = request.args.get('pesquisa',"")
         categoria = request.args.get('categoria',"0")
 
-        from sqlalchemy import or_
 
         if pesquisa != "" and categoria != "0":
-            produtos = Produto.query.filter(Produto.nome_produto.ilike(f"%{pesquisa}%"), Produto.categoria == categoria).limit(100).all()
+            produtos = pesquisar(pesquisa,categoria)
         elif categoria != "0":
             produtos = Produto.query.filter(Produto.categoria == categoria).limit(100).all()
         elif pesquisa:
-            palavras = pesquisa.split()  # Divide a pesquisa em palavras-chave
-            filtros = [Produto.nome_produto.ilike(f"%{palavra}%") for palavra in palavras]
-            
-            # Certifique-se de que as condições são passadas corretamente para and_
-            produtos = Produto.query.filter(or_(*filtros)).limit(100).all()
-            def contar_correspondencias(produto, palavras):
-                return sum(1 for palavra in palavras if palavra.lower() in produto.nome_produto.lower())
-
-            # Ordena os produtos pela quantidade de correspondências, do maior para o menor
-            produtos = sorted(produtos, key=lambda p: contar_correspondencias(p, palavras), reverse=True)
+           produtos = pesquisar(pesquisa)
         else:
             produtos = Produto.query.order_by(func.random()).limit(100).all()
 

@@ -66,7 +66,8 @@ for link in links:
         nome = nome_tag.text.strip() if nome_tag else "Nome não encontrado"
 
         # Normalizando o nome do arquivo
-        nome_arquivo = re.sub(r'[^a-zA-Z0-9 _-]','',nome)[:150]  
+        nome_arquivo = re.sub(r"/", " ", nome)
+        nome_arquivo = re.sub(r'[^a-zA-Z0-9 _-]','',nome_arquivo)[:150]  
         caminho_imagem = os.path.join(pasta_imagens, f"{nome_arquivo}.jpg")
 
         if os.path.exists(caminho_imagem):
