@@ -5,7 +5,7 @@ from models.Usuario import Usuario
 from services.email_service import enviar_validacao,enviar_email_recuperacao
 
 
-API_URL = "http://localhost:3001/tokens/"
+API_URL = "http://localhost:3002/tokens/"
 
 def criarToken(metodo, id, email):
     dados_usuario = {

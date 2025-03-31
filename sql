@@ -69,6 +69,7 @@ create table produtos(
 id_produto int auto_increment primary key,
 nome_produto varchar(150),
 descricao varchar(600),
+categoria varchar(50),
 img varchar(300)
 );
 

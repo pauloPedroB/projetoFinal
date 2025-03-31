@@ -19,8 +19,8 @@ def extrair_nome_meio(url):
 
 db = mysql.connector.connect(
     host="localhost",
-    user="root",
-    password="Victor@12",
+    user="aluno",
+    password="toor",
     database="projetoAutomoveis"
 )
 cursor = db.cursor()

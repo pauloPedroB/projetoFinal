@@ -18,7 +18,7 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 def pesquisar(pesquisa, categoria = None):
     #Removendo pontuações
     pesquisa = pesquisa.translate(str.maketrans('', '', string.punctuation))
-
+    
     palavras = pesquisa.split()
     stop_words = set(stopwords.words('portuguese'))
     print(stop_words)
