@@ -45,7 +45,12 @@
                 <div class="opcao">
                     <a href="/produto/vizualizar/{{produto.id_produto}}">
                         <h2>{{produto.nome_produto}}</h2>
-                        <img src="{{ url_for('static', filename='uploads/' + produto.img) }}" alt="">
+                        {%if produto.img[:5] == 'https'%}
+                            <img src="{{produto.img}}" alt="">
+                        {%else%}
+                            <img src="{{ url_for('static', filename='uploads/' + produto.img) }}" alt="">
+
+                        {%endif%}
                         {%if typeUser ==1%}
                             <form action="/produto/editar/{{produto.id_produto}}" method="post">
                                 <input type="submit" value="Editar">
