@@ -1,7 +1,7 @@
 import requests
 from models.Usuario import Usuario
 
-API_URL = "http://localhost:3002/usuarios/"
+API_URL = "http://localhost:3001/usuarios/"
 
 def buscarPorId(id):
     dados_usuario = {
