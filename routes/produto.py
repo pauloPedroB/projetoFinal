@@ -47,7 +47,6 @@ def pesquisar(pesquisa, categoria = None):
     stop_words = set(stopwords.words('portuguese'))
     palavras_filtradas = [palavra for palavra in palavras if palavra not in stop_words]
     print(palavras_filtradas)
-    palavras_com_sinonimos = []
     palavras_final = []
     
     for palavra in palavras_filtradas:
@@ -56,15 +55,15 @@ def pesquisar(pesquisa, categoria = None):
             sinonimo = sinonimo.replace("_", " ")
             partes = sinonimo.split()
             for parte in partes:
-                palavras_com_sinonimos.append(parte.lower())
-        palavras_com_sinonimos.append(palavra)
-    palavras_com_sinonimos = list(dict.fromkeys(palavras_com_sinonimos))
-
-    for palavra in palavras_com_sinonimos:
-        palavra_normalizada = unicodedata.normalize('NFKD', palavra)
-        palavra = ''.join([c for c in palavra_normalizada if not unicodedata.combining(c)])
-        if palavra not in stop_words:
+                if parte not in stop_words:
+                    palavras_final.append(parte.lower())
+        if parte not in stop_words:
             palavras_final.append(palavra)
+    
+    palavras_final = list(dict.fromkeys(palavras_final))
+
+
+        
  
     
 
@@ -84,6 +83,10 @@ def pesquisar(pesquisa, categoria = None):
 
     # Ordena os produtos pela quantidade de correspondências, do maior para o menor
     produtos = sorted(produtos, key=lambda p: contar_correspondencias(p, palavras_final), reverse=True)
+    for produto in produtos:
+        print(produto.nome_produto)
+        print(contar_correspondencias(produto,palavras_final))
+
     return produtos
 
 @produto_bp.route('/produtos')

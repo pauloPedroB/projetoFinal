@@ -30,7 +30,6 @@ def pesquisar(pesquisa):
     palavras = pesquisa.split()
     stop_words = set(stopwords.words('portuguese'))
     palavras_filtradas = [palavra for palavra in palavras if palavra.lower() not in stop_words]
-    palavras_com_sinonimos = []
     palavras_final = []
     
     for palavra in palavras_filtradas:
@@ -39,15 +38,12 @@ def pesquisar(pesquisa):
             sinonimo = sinonimo.replace("_", " ")
             partes = sinonimo.split()
             for parte in partes:
-                palavras_com_sinonimos.append(parte.lower())
-        palavras_com_sinonimos.append(palavra)
-    palavras_com_sinonimos = list(dict.fromkeys(palavras_com_sinonimos))
-
-    for palavra in palavras_com_sinonimos:
-        palavra_normalizada = unicodedata.normalize('NFKD', palavra)
-        palavra = ''.join([c for c in palavra_normalizada if not unicodedata.combining(c)])
-        if palavra not in stop_words:
+                if parte not in stop_words:
+                    palavras_final.append(parte.lower())
+        if parte not in stop_words:
             palavras_final.append(palavra)
+    
+    palavras_final = list(dict.fromkeys(palavras_final))
  
     
 
