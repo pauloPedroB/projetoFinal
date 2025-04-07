@@ -3,7 +3,7 @@ from models.Usuario import Usuario
 
 
 class Token(object):
-    id_token = int
+    id_token = str(300)
     dt_cr = datetime
     usado = bool
     usuario = Usuario
