@@ -5,10 +5,23 @@ import services.validacoes as validacoes
 import string
 from sqlalchemy import or_
 import nltk
-from nltk.corpus import stopwords
+from nltk.corpus import stopwords,wordnet
+import unicodedata
+
+nltk.download('stopwords')
+nltk.download("omw-1.4")
+nltk.download("wordnet")
+nltk.download("wordnet_ic")
 
 
 menu_bp = Blueprint('menu', __name__)
+
+def encontrar_sinonimos(palavra):
+    sinonimos = set()
+    for synset in wordnet.synsets(palavra, lang="por"):  # Busca em português
+        for lemma in synset.lemmas(lang="por"):
+            sinonimos.add(lemma.name())
+    return list(sinonimos)
 
 def pesquisar(pesquisa):
     #Removendo pontuações
@@ -17,8 +30,30 @@ def pesquisar(pesquisa):
     palavras = pesquisa.split()
     stop_words = set(stopwords.words('portuguese'))
     palavras_filtradas = [palavra for palavra in palavras if palavra.lower() not in stop_words]
+    palavras_com_sinonimos = []
+    palavras_final = []
+    
+    for palavra in palavras_filtradas:
+        sinonimos = encontrar_sinonimos(palavra)
+        for sinonimo in sinonimos:
+            sinonimo = sinonimo.replace("_", " ")
+            partes = sinonimo.split()
+            for parte in partes:
+                palavras_com_sinonimos.append(parte.lower())
+        palavras_com_sinonimos.append(palavra)
+    palavras_com_sinonimos = list(dict.fromkeys(palavras_com_sinonimos))
 
-    filtros = [Produto.nome_produto.ilike(f"%{palavra}%") for palavra in palavras_filtradas]
+    for palavra in palavras_com_sinonimos:
+        palavra_normalizada = unicodedata.normalize('NFKD', palavra)
+        palavra = ''.join([c for c in palavra_normalizada if not unicodedata.combining(c)])
+        if palavra not in stop_words:
+            palavras_final.append(palavra)
+ 
+    
+
+    print(palavras_final)
+
+    filtros = [Produto.nome_produto.ilike(f"%{palavra}%") for palavra in palavras_final]
 
     R = 6371
     distancia = None
@@ -54,11 +89,11 @@ def pesquisar(pesquisa):
             .all()
 
 
-    def contar_correspondencias(produto, palavras_filtradas):
-        return sum(1 for palavra in palavras_filtradas if palavra.lower() in produto.Produto.nome_produto.lower())
+    def contar_correspondencias(produto, palavras_final):
+        return sum(1 for palavra in palavras_final if palavra.lower() in produto.Produto.nome_produto.lower())
 
     # Ordena os produtos pela quantidade de correspondências, do maior para o menor
-    produtos = sorted(produtos, key=lambda p: contar_correspondencias(p, palavras_filtradas), reverse=True)
+    produtos = sorted(produtos, key=lambda p: contar_correspondencias(p, palavras_final), reverse=True)
     return produtos
 
 

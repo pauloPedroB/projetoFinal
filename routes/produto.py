@@ -49,6 +49,7 @@ def pesquisar(pesquisa, categoria = None):
     print(palavras_filtradas)
     palavras_com_sinonimos = []
     palavras_final = []
+    
     for palavra in palavras_filtradas:
         sinonimos = encontrar_sinonimos(palavra)
         for sinonimo in sinonimos:
