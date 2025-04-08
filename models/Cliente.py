@@ -1,15 +1,15 @@
 from datetime import datetime
 from models.Usuario import Usuario
 
-class Cliente():
-    id_cliente = int
-    cpf = str(11)
-    nome = str(65)
-    telefone = str(20)
-    dtNascimento = datetime
-    genero = int
-    carro = int
-    usuario = Usuario
+class Cliente:
+    id_cliente: int
+    cpf: str
+    nome: str
+    telefone: str
+    dtNascimento: datetime
+    genero: int
+    carro: int
+    usuario: Usuario
 
     def __init__(self, id_cliente, cpf, nome, telefone, dtNascimento, genero, carro, usuario):
         self.id_cliente = id_cliente
@@ -20,4 +20,5 @@ class Cliente():
         self.genero = genero
         self.carro = carro
         self.usuario = usuario
+
     

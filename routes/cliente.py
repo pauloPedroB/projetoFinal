@@ -1,8 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
-from classes import db, Cliente
 import re
 import services.validacoes as validacoes
-from controllers.userController import alterarTipo
+from controllers import clienteController
+from models.Cliente import Cliente
+
 
 cliente_bp = Blueprint('cliente', __name__)
 
@@ -46,19 +47,25 @@ def cadastrar():
         cadastro,mensagem = validacoes.validar_cadastroCliente(cpf,nome,telefone,dtNascimento,genero,carro)
         if cadastro == False:
             return redirect(url_for('cliente.cadastro',mensagem = mensagem))
-        elif(Cliente.query.filter_by(cpf=cpf).first()):
-            return redirect(url_for('cliente.cadastro',mensagem = "Já possuí um cliente cadastrado com esse CPF"))
+                
         
-        usuario.typeUser = 3
-        retorno, mensagem = alterarTipo(usuario)
-        if(retorno == False):
-            return redirect(url_for('cliente.cadastro',mensagem = f"Não foi possível vincular seu usuário a um cliente, {mensagem}"))
 
+        cliente = Cliente(
+            id_cliente=None,
+            cpf=cpf,
+            nome=nome,
+            telefone = telefone,
+            dtNascimento=dtNascimento,
+            genero = genero,
+            carro = carro,
+            usuario = usuario,
+        )
+        novo_Cliente,mensagem = clienteController.criar(cliente)
+        if(novo_Cliente == None):
+            return redirect(url_for('cliente.cadastro',mensagem = f"Não foi possível cadastrar o Cliente, {mensagem}"))
+        usuario.typeUser = 3
         session['typeUser'] = usuario.typeUser
-        novo_Cliente = Cliente(cpf=cpf, dtNascimento = dtNascimento, nome = nome, telefone = telefone, genero = genero, carro = carro, id_usuario = usuario.id_usuario)
-        print(novo_Cliente)
-        db.session.add(novo_Cliente)
-        db.session.commit()
+        
         return redirect(url_for('endereco.cadastro'))
     
     except Exception as e:
@@ -70,14 +77,12 @@ def editar(id_cliente):
         cadastro = validacoes.verificarCadastroCompleto()
         if cadastro:
             return cadastro
-        
-        cliente = Cliente.query.get(id_cliente)
+        cliente, mensagem = clienteController.buscar({"id_cliente": id_cliente})
         if not cliente:
-            return redirect(url_for('menu.Principal',mensagem = "Cliente não encontrado"))
+            return redirect(url_for('menu.principal',mensagem = "Cliente não encontrado"))
         
-        
-        if cliente.id_usuario != session['user_id']:
-            return redirect(url_for('menu.Principal',mensagem = "Você não tem permissão para editar este Perfil"))
+        if cliente.usuario.id_usuario != session['user_id']:
+            return redirect(url_for('menu.principal',mensagem = "Você não tem permissão para editar este Perfil"))
         
         mensagem = request.args.get('mensagem')
         if mensagem == None:
