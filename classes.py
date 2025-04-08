@@ -55,6 +55,32 @@ class Loja(db.Model):
         return f'<Loja {self.cnpj}>'
     
 
+class Cliente(db.Model):
+     __tablename__ = 'clientes'
+ 
+     id_cliente = db.Column(db.Integer, primary_key=True, autoincrement=True)
+     cpf = db.Column(db.String(11), unique=True, nullable=False)
+     nome = db.Column(db.String(65), nullable=False)
+     telefone = db.Column(db.String(20), nullable=False)
+     dtNascimento = db.Column(db.Date, nullable=False)
+     genero = db.Column(db.Integer, nullable=False)
+     carro = db.Column(db.Integer, nullable=False)
+ 
+     id_usuario = db.Column(db.Integer, unique=True, nullable=False)
+ 
+     _usuario_obj = None  # Cache para armazenar o usuário
+ 
+     @property
+     def usuario(self):
+         """Busca os dados do usuário na API apenas na primeira vez."""
+         if self._usuario_obj is None:
+             self._usuario_obj, _ = buscarPorId(self.id_usuario)  # Busca usuário na API
+         return self._usuario_obj
+ 
+     def __repr__(self):
+         return f'<Cliente {self.nome} (Usuário: {self.usuario.email_usuario if self.usuario else "Não encontrado"})>'
+    
+
 
 class Administrador(db.Model):
     __tablename__ = 'administradores'

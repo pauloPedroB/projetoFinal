@@ -6,7 +6,8 @@ import string
 from sqlalchemy import or_
 import nltk
 from nltk.corpus import stopwords,wordnet
-import unicodedata
+from controllers import clienteController
+
 
 nltk.download('stopwords')
 nltk.download("omw-1.4")
@@ -151,7 +152,7 @@ def dados():
         if typeUser == 2:
             dados = Loja.query.filter_by(id_usuario = session['user_id']).first()
         if typeUser == 3:
-            dados = Cliente.query.filter_by(id_usuario = session['user_id']).first()
+            dados, mensagem = clienteController.buscar({"id_usuario": session['user_id']})
         if not dados:
             return redirect(url_for('menu.principal', mensagem="Não encontramos um Cliente ou Loja vinculado ao seu Usuário",typeUser = typeUser))
         endereco = Endereco.query.filter_by(id_usuario=session['user_id']).first()

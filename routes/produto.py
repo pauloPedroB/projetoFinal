@@ -62,13 +62,7 @@ def pesquisar(pesquisa, categoria = None):
     
     palavras_final = list(dict.fromkeys(palavras_final))
 
-
-        
- 
-    
-
     print(palavras_final)
-
 
     filtros = [Produto.nome_produto.ilike(f"%{palavra}%") for palavra in palavras_final]
 

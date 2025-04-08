@@ -24,7 +24,6 @@ def buscarPorId(id):
     return usuario,mensagem
 
 def buscarPorEmail(email):
-    print("teste")
     dados_usuario = {
             "email_usuario": email,
         }
