@@ -3,34 +3,13 @@ from models.Usuario import Usuario
 
 API_URL = "http://localhost:3001/usuarios/"
 
-def buscarPorId(id):
-    dados_usuario = {
-            "id_user": id,
-        }
-    
-    response = requests.post(API_URL +"id/", json=dados_usuario)
-    resposta_json = response.json()
-    mensagem = resposta_json.get('message')
-    if response.status_code != 200:
-        return None,mensagem
-    usuario_api = resposta_json.get('usuario')
 
-    usuario = Usuario(id_usuario=usuario_api["id_usuario"],
-                      email_usuario=usuario_api["email_usuario"],
-                      pass_usuario=usuario_api["pass_usuario"],
-                      verificado=usuario_api["verificado"],
-                      typeUser = usuario_api["typeUser"])
-    
-    return usuario,mensagem
-
-def buscarPorEmail(email):
-    dados_usuario = {
-            "email_usuario": email,
-        }
+def buscar(dados_usuario):
+ 
     response = requests.post(API_URL +"buscar/", json=dados_usuario)
     resposta_json = response.json()
     mensagem = resposta_json.get('message')
-
+    print(dados_usuario)
     if response.status_code !=200:
         return None,mensagem
     
@@ -78,7 +57,6 @@ def login(email,senha):
 
     if response.status_code != 200:
         return None,mensagem
-    
     usuario_api = resposta_json.get('usuario')
 
     usuario = Usuario(id_usuario=usuario_api["id_usuario"],

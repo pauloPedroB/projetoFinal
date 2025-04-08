@@ -1,7 +1,7 @@
 # /routes/auth.py
 from flask import Blueprint, render_template, request, redirect, url_for, session
 import services.validacoes as validacoes
-from controllers.userController import criarUsuario,login,buscarPorEmail,resetarSenha
+from controllers.userController import criarUsuario,login,buscar,resetarSenha
 from controllers.tokenController import criarToken,validarToken
 
 # Criando o Blueprint de autenticação
@@ -148,7 +148,7 @@ def recuperarsenha():
             return verificar
         email = request.form['email']
 
-        usuario,mensagem = buscarPorEmail(email)
+        usuario,mensagem = buscar({'email_usuario': email})
         if usuario == None:
             return redirect(url_for('auth.inicio', mensagem=mensagem))
         mensagem = criarToken(2, usuario.id_usuario, usuario.email_usuario)

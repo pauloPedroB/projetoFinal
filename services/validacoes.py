@@ -7,7 +7,7 @@ from geopy.geocoders import Nominatim, OpenCage
 from geopy.exc import GeocoderTimedOut
 from classes import Endereco,Administrador
 from flask import session,redirect,url_for
-from controllers.userController import buscarPorId
+from controllers.userController import buscar
 
 
 def verificarCadastroCompleto(mensagem=None):
@@ -43,7 +43,7 @@ def verificarLojaCliente(mensagem=None):
     if mensagem == None:
         mensagem = ""
     
-    usuario,mensagem = buscarPorId(session['user_id'])
+    usuario,mensagem = buscar({'id_user': session['user_id']})
     if usuario == None:
         session.clear()
         return redirect(url_for('auth.inicio', mensagem=mensagem))
@@ -55,7 +55,7 @@ def verificarLojaCliente(mensagem=None):
     return None  # Adicionado para evitar retorno implícito de None
 
 def verificarUsuario():
-    usuario,mensagem  = buscarPorId(session['user_id'])
+    usuario,mensagem = buscar({'id_user': session['user_id']})
     if usuario == None:
         session.clear()
         return redirect(url_for('auth.inicio', mensagem=mensagem))

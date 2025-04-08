@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from models import Usuario
-from controllers.userController import buscarPorId
+from controllers.userController import buscar
 db = SQLAlchemy()
 
 class Endereco(db.Model):
@@ -23,7 +23,7 @@ class Endereco(db.Model):
     def usuario(self):
         """Busca os dados do usuário na API apenas na primeira vez."""
         if self._usuario_obj is None:
-            self._usuario_obj, _ = buscarPorId(self.id_usuario)  # Busca usuário na API
+            self._usuario_obj, _ = buscar({'id_user': self.id_usuario})  # Busca usuário na API
         return self._usuario_obj
 
     def __repr__(self):
@@ -48,7 +48,8 @@ class Loja(db.Model):
     def usuario(self):
         """Busca os dados do usuário na API apenas na primeira vez."""
         if self._usuario_obj is None:
-            self._usuario_obj, _ = buscarPorId(self.id_usuario)  # Busca usuário na API
+            self._usuario_obj, _ = buscar({'id_user': self.id_usuario})  # Busca usuário na API
+
         return self._usuario_obj
 
     def __repr__(self):
@@ -71,7 +72,7 @@ class Administrador(db.Model):
     def usuario(self):
         """Busca os dados do usuário na API apenas na primeira vez."""
         if self._usuario_obj is None:
-            self._usuario_obj, _ = buscarPorId(self.id_usuario)  # Busca usuário na API
+            self._usuario_obj, _ = buscar({'id_user': self.id_usuario})  # Busca usuário na API
         return self._usuario_obj
 
     def __repr__(self):
