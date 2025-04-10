@@ -1,10 +1,10 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
-from classes import db,Loja,Produto,Produto_Loja,Endereco
+from classes import db,Produto,Produto_Loja,Endereco
+from models.Loja import Loja
 import re
 import services.validacoes as validacoes
 from geopy.distance import geodesic
-from controllers.userController import alterarTipo
-
+from controllers import lojaController
 loja_bp = Blueprint('loja', __name__)
 
 @loja_bp.route('/cadastro')
@@ -46,17 +46,21 @@ def cadastrar():
         cadastro,mensagem = validacoes.validar_cadastroLoja(cnpj_user,nomeFantasia,razaoSocial,telefone,celular,abertura)
         if cadastro == False:
             return redirect(url_for('loja.cadastro',mensagem = mensagem))
-        elif(Loja.query.filter_by(cnpj=cnpj_user).first()):
-            return redirect(url_for('loja.cadastro',mensagem = "Já possuí uma loja vinculada com esse CNPJ"))
-        usuario.typeUser = 2
-        retorno, mensagem = alterarTipo(usuario)
-        if(retorno == False):
-            return redirect(url_for('cliente.cadastro',mensagem = f"Não foi possível vincular seu usuário a uma loja, {mensagem}"))
+        
+        loja = Loja(id_loja=None,
+                      cnpj=cnpj_user,
+                      nomeFantasia=nomeFantasia,
+                      razaoSocial = razaoSocial,
+                      telefone=telefone,
+                      celular = celular,
+                      abertura = abertura,
+                      usuario = usuario,
+                        )
+        nova_loja,mensagem = lojaController.criar(loja)
+        if(nova_loja == None):
+            return redirect(url_for('loja.cadastro',mensagem = f"Não foi possível vincular seu usuário a uma loja, {mensagem}"))
+        usuario.typeUser = 3        
         session['typeUser'] = usuario.typeUser
-
-        nova_loja = Loja(cnpj=cnpj_user, nomeFantasia = nomeFantasia, razaoSocial = razaoSocial, telefone = telefone, celular = celular, abertura = abertura, id_usuario = usuario.id_usuario)
-        db.session.add(nova_loja)
-        db.session.commit()
 
         return redirect(url_for('endereco.cadastro'))
         
@@ -77,8 +81,8 @@ def vincular(id_produto):
         mensagem = request.args.get('mensagem')
         if mensagem == None:
             mensagem = ""
-        loja = Loja.query.filter_by(id_usuario=session['user_id']).first()
-        if not loja:
+        loja, mensagem = lojaController.buscar({"id_usuario": session['user_id']})
+        if loja == None:
             return redirect(url_for('produto.produtos',mensagem = "Loja não encontrada"))
         produto = Produto.query.get(id_produto)
         if not produto:
@@ -110,8 +114,9 @@ def desvincular(id_produto):
         mensagem = request.args.get('mensagem')
         if mensagem == None:
             mensagem = ""
-        loja = Loja.query.filter_by(id_usuario=session['user_id']).first()
-        if not loja:
+        loja, mensagem = lojaController.buscar({"id_usuario": session['user_id']})
+
+        if loja == None:
             return redirect(url_for('produto.produtos',mensagem = "Loja não encontrada"))
         produto = Produto.query.get(id_produto)
         if not produto:
@@ -140,8 +145,9 @@ def produto(id_produto):
         produto_loja = Produto_Loja.query.get(id_produto)
         if not produto_loja:
             return redirect(url_for('menu.principal',mensagem = "Produto não encontrado"))
-        loja = Loja.query.filter_by(id_loja=produto_loja.id_loja).first()
-        if not loja:
+        loja, mensagem = lojaController.buscar({"id_usuario": session['user_id']})
+        
+        if loja == None:
             return redirect(url_for('menu.principals',mensagem = "Loja não encontrada"))
         produto = Produto.query.filter_by(id_produto=produto_loja.id_produto).first()
         if not produto:

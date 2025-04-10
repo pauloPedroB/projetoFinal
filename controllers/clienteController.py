@@ -31,7 +31,7 @@ def buscar(dados_usuario):
     
     return cliente,mensagem
 
-def criar(cliente):
+def criar(cliente:Cliente):
     dados_usuario = {
             "cpf": cliente.cpf,
             "nome": cliente.nome,
