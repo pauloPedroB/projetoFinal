@@ -59,7 +59,7 @@ def cadastrar():
         nova_loja,mensagem = lojaController.criar(loja)
         if(nova_loja == None):
             return redirect(url_for('loja.cadastro',mensagem = f"Não foi possível vincular seu usuário a uma loja, {mensagem}"))
-        usuario.typeUser = 3        
+        usuario.typeUser = 2        
         session['typeUser'] = usuario.typeUser
 
         return redirect(url_for('endereco.cadastro'))
