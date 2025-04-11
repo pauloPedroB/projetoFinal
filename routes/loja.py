@@ -152,7 +152,7 @@ def produto(id_produto):
         produto = Produto.query.filter_by(id_produto=produto_loja.id_produto).first()
         if not produto:
             return redirect(url_for('menu.principal',mensagem = "Produto não encontrado"))
-        endereco_loja = Endereco.query.filter_by(id_usuario = loja.id_usuario).first()
+        endereco_loja = Endereco.query.filter_by(id_usuario = loja.usuario.id_usuario).first()
         endereco_user = Endereco.query.filter_by(id_usuario = session['user_id']).first()
         distancia = None
         typeUser = session['typeUser']

@@ -43,7 +43,12 @@
                 <div class="opcao">
                     <a href="/loja/produto/{{produto_loja.Produto_Loja.id_produto_loja}}">
                         <h2>{{produto_loja.Produto.nome_produto}}</h2>
-                        <img src="{{ url_for('static', filename='uploads/' + produto_loja.Produto.img) }}" alt="">
+                        {%if produto_loja.Produto.img[:5] == 'https'%}
+                            <img src="{{produto_loja.Produto.img}}" alt="">
+                        {%else%}
+                            <img src="{{ url_for('static', filename='uploads/' + produto_loja.Produto.img) }}" alt="">
+
+                        {%endif%}
                         {%if typeUser != 1 and pesquisa != ""%}
                             <h4>Distância: {{produto_loja.distancia}} km</h4>
                         {%endif%}

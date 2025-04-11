@@ -73,7 +73,12 @@
                 <div class="opcao">
                     <a href="/loja/produto/{{produto_loja.id_produto_loja}}">
                         <h2>{{produto.nome_produto}}</h2>
-                        <img src="{{ url_for('static', filename='uploads/' + produto.img) }}" alt="">
+                        {%if produto.img[:5] == 'https'%}
+                            <img src="{{produto.img}}" alt="">
+                        {%else%}
+                            <img src="{{ url_for('static', filename='uploads/' + produto.img) }}" alt="">
+
+                        {%endif%}
                         <form action="/loja/desvincular/{{produto.id_produto}}" method="post">
                             <input type="submit" value="Desvincular" style="background-color: red;">
                         </form>
