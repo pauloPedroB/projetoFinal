@@ -68,6 +68,7 @@ def verificarUsuario():
 def verificarEndereco(mensagem=None):
     if mensagem == None:
         mensagem = ""
+    
     endereco = Endereco.query.filter_by(id_usuario=session['user_id']).first()
     if not endereco:
         if Administrador.query.filter_by(id_usuario=session['user_id']).first() is None:

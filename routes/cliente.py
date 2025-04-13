@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
 import re
 import services.validacoes as validacoes
-from controllers import clienteController
+from controllers import clienteController,userController
 from models.Cliente import Cliente
 
 

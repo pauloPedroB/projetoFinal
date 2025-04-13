@@ -68,4 +68,6 @@ def criar(loja:Loja):
                       usuario = usuario,
                         )
     
-    return loja_api,mensagem
+    return loja,mensagem
+
+    

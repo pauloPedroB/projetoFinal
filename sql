@@ -12,13 +12,13 @@ typeUser int null
 
 create table enderecos(
 id int auto_increment primary key,
-cep char(8) unique,
+cep char(8),
 rua varchar(65),
 nmr int,
 bairro varchar(40),
 cidade varchar(40),
 uf char(2),
-complemento varchar(200),
+complemento varchar(200) null,
 latitude varchar(50),
 longitude varchar(50),
 id_usuario int,
@@ -68,7 +68,6 @@ foreign key(id_usuario) references usuarios(id_usuario)
 create table produtos(
 id_produto int auto_increment primary key,
 nome_produto varchar(150),
-descricao varchar(600),
 categoria varchar(50),
 img varchar(300)
 );
@@ -80,7 +79,7 @@ id_loja int,
 foreign key(id_produto) references produtos(id_produto),
 foreign key(id_loja) references lojas(id_loja)
 );
-select * from produtos;
+select * from enderecos;
 
 
 insert into usuarios (email_usuario,pass_usuario,verificado,typeUser) values("adminColiseu@admin.com","$2b$10$BnWF6mS/AuZp//2B67uMiO8XlbrIZE1pSch7zh04lMptxQdbrXxNq","20250303",1);
