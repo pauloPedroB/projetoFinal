@@ -43,23 +43,23 @@
         {% if produtos %}
             {%for produto in produtos%}
                 <div class="opcao">
-                    <a href="/produto/vizualizar/{{produto.id_produto}}">
-                        <h2>{{produto.nome_produto}}</h2>
-                        {%if produto.img[:5] == 'https'%}
-                            <img src="{{produto.img}}" alt="">
+                    <a href="/produto/vizualizar/{{produto['id_produto']}}">
+                        <h2>{{produto['nome_produto']}}</h2>
+                        {%if produto['img'][:5] == 'https'%}
+                            <img src="{{produto['img']}}" alt="">
                         {%else%}
-                            <img src="{{ url_for('static', filename='uploads/' + produto.img) }}" alt="">
+                            <img src="{{ url_for('static', filename='uploads/' + produto['img']) }}" alt="">
 
                         {%endif%}
                         {%if typeUser ==1%}
-                            <form action="/produto/editar/{{produto.id_produto}}" method="post">
+                            <form action="/produto/editar/{{produto['id_produto']}}" method="post">
                                 <input type="submit" value="Editar">
                             </form>
-                            <form action="/produto/excluir/{{produto.id_produto}}" method="post">
+                            <form action="/produto/excluir/{{produto['id_produto']}}" method="post">
                                 <input type="submit" value="Exluir" style="background-color: red;">
                             </form>
                         {%elif typeUser == 2%}
-                            <form action="/loja/vincular/{{produto.id_produto}}" method="post">
+                            <form action="/loja/vincular/{{produto['id_produto']}}" method="post">
                                 <input type="submit" value="Vincular" style="background-color: green;">
                             </form>
                         {%endif%}
@@ -73,7 +73,7 @@
                 <div class="opcao">
                     <a href="/loja/produto/{{produto_loja.id_produto_loja}}">
                         <h2>{{produto.nome_produto}}</h2>
-                        {%if produto.img[:5] == 'https'%}
+                        {%if produto['img'][:5] == 'https'%}
                             <img src="{{produto.img}}" alt="">
                         {%else%}
                             <img src="{{ url_for('static', filename='uploads/' + produto.img) }}" alt="">

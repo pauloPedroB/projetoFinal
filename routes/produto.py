@@ -1,15 +1,13 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session,current_app
-from classes import db,Produto,Produto_Loja,Loja
+from classes import db,Produto_Loja,Loja
+from models.Produto import Produto
 import os
 from sqlalchemy import func
 import string
 from sqlalchemy import or_
 import nltk
 from nltk.corpus import stopwords,wordnet
-import unicodedata
-
-
-
+from controllers import produtoController
 
 
 nltk.download('stopwords')
@@ -57,30 +55,15 @@ def pesquisar(pesquisa, categoria = None):
             for parte in partes:
                 if parte not in stop_words:
                     palavras_final.append(parte.lower())
-        if parte not in stop_words:
+        if palavra not in stop_words:
             palavras_final.append(palavra)
     
     palavras_final = list(dict.fromkeys(palavras_final))
 
     print(palavras_final)
 
-    filtros = [Produto.nome_produto.ilike(f"%{palavra}%") for palavra in palavras_final]
-
+    produtos,mensagem = produtoController.listar(palavras_final,categoria)
     
-    if(categoria == None):
-        produtos = Produto.query.filter(or_(*filtros)).limit(100).all()
-    else:
-        produtos = Produto.query.filter(or_(*filtros),Produto.categoria == categoria).limit(100).all()
-
-    def contar_correspondencias(produto, palavras_final):
-        return sum(1 for palavra in palavras_final if palavra.lower() in produto.nome_produto.lower())
-
-    # Ordena os produtos pela quantidade de correspondências, do maior para o menor
-    produtos = sorted(produtos, key=lambda p: contar_correspondencias(p, palavras_final), reverse=True)
-    for produto in produtos:
-        print(produto.nome_produto)
-        print(contar_correspondencias(produto,palavras_final))
-
     return produtos
 
 @produto_bp.route('/produtos')
@@ -101,24 +84,20 @@ def produtos():
         if pesquisa != "" and categoria != "0":
             produtos = pesquisar(pesquisa,categoria)
         elif categoria != "0":
-            produtos = Produto.query.filter(Produto.categoria == categoria).limit(100).all()
+            produtos,mensagem = produtoController.listar([], categoria)
         elif pesquisa:
            produtos = pesquisar(pesquisa)
         else:
-            produtos = Produto.query.order_by(func.random()).limit(100).all()
+            produtos,mensagem = produtoController.listar([])
 
         produtos_loja = None
         if typeUser == 2:
             loja = Loja.query.filter_by(id_usuario=session['user_id']).first()
 
-            produtos_loja = (
-                db.session.query(Produto,Produto_Loja)
-                .join(Produto_Loja, Produto.id_produto == Produto_Loja.id_produto)
-                .join(Loja, Produto_Loja.id_loja == loja.id_loja)
-                .all()
-            )
-        categorias = db.session.query(Produto.categoria).distinct().all()
-        categorias_unicas = [c[0] for c in categorias]
+            produtos_loja = []
+        #categorias = db.session.query(Produto.categoria).distinct().all()
+        #categorias_unicas = [c[0] for c in categorias]
+        categorias_unicas = []
         return render_template('menu/produtos.html', mensagem=mensagem,produtos = produtos, produtos_loja = produtos_loja,typeUser = session['typeUser'],categorias = categorias_unicas,pesquisa = pesquisa,categoria = categoria)
     except Exception as e:
         return redirect(url_for('menu.principal',mensagem = f"Algo deu errado, tente novamente: {e}"))
@@ -134,8 +113,8 @@ def vizualizar(id):
             return redirect(url_for('menu.principal',mensagem = "Você não possuí acesso a essa página"))
 
         mensagem = request.args.get('mensagem', "")
-        produto = Produto.query.get(id)
-        if not produto:
+        produto, mensagem = produtoController.buscar({'id_produto': id})
+        if produto == None:
             return redirect(url_for('produto.produtos',mensagem = "Produto não encontrado"))
                 
         return render_template('menu/vizualizarProduto.html', mensagem=mensagem,produto = produto)
@@ -188,9 +167,15 @@ def cadastrar():
         # Armazena o nome da imagem em um arquivo de texto
         with open("imagens.txt", "a") as f:
             f.write(filename + "\n")
-        novo_produto = Produto(nome_produto = nome, img = filename)
-        db.session.add(novo_produto)
-        db.session.commit()
+        produto = Produto(
+                nome_produto= nome,
+                categoria="qualquer", #arrumar isso
+                img= filename,
+                )
+        criar, mensagem = produtoController.criar(produto)
+        if(criar == False):
+            return redirect(url_for('produto.cadastro',mensagem = f'O Produto não foi criado: {mensagem}'))
+
         return redirect(url_for('produto.produtos',mensagem = "Produto Cadastrado com Sucesso"))
     except:
         return redirect(url_for('produto.cadastro',mensagem = "Algo deu errado, tente novamente"))
@@ -205,16 +190,15 @@ def excluir(id):
             return redirect(url_for('menu.principal',mensagem = "Você não possuí acesso de administrador"))
             
         mensagem = request.args.get('mensagem', "")
+        produto, mensagem = produtoController.buscar({'id_produto': id})
 
-        produto = Produto.query.get(id)
-        if not produto:
+        if produto == None:
             return redirect(url_for('produto.produtos',mensagem = "Produto não encontrado"))
 
-        db.session.delete(produto)
-        db.session.commit()
-      
+        excluir, mensagem = produtoController.excluir(produto)
+        if (excluir == False):
+            return redirect(url_for('produto.produtos',mensagem = f"Produto não excluído: {mensagem}"))
 
-      
         return redirect(url_for('produto.produtos', mensagem = "Produto deletado com sucesso"))
     except:
         return redirect(url_for('produto.produtos',mensagem = "Algo deu errado, tente novamente"))
@@ -230,8 +214,8 @@ def editar(id):
             
         mensagem = request.args.get('mensagem', "")
 
-        produto = Produto.query.get(id)
-        if not produto:
+        produto, mensagem = produtoController.buscar({'id_produto': id})
+        if produto == None:
             return redirect(url_for('produto.produtos',mensagem = "Produto não encontrado"))
 
         return render_template('menu/criarProduto.html', mensagem=mensagem,produto = produto)
@@ -249,9 +233,8 @@ def update(id):
             return redirect(url_for('menu.principal',mensagem = "Você não possuí acesso de administrador"))
             
         mensagem = request.args.get('mensagem', "")
-
-        produto = Produto.query.get(id)
-        if not produto:
+        produto, mensagem = produtoController.buscar({'id_produto': id})
+        if produto == None:
             return redirect(url_for('produto.produtos',mensagem = "Produto não encontrado"))
         
         nome = request.form['name']
@@ -270,7 +253,9 @@ def update(id):
                 f.write(filename + "\n")
             produto.img = filename
         produto.nome_produto = nome
-        db.session.commit()
+        editar, mensagem = produtoController.editar(produto)
+        if (editar == False):
+            return redirect(url_for('produto.produtos',mensagem = f"Produto não editado: {mensagem}"))
         return redirect(url_for('produto.produtos',mensagem = "Produto Editado com Sucesso"))
     except:
         return redirect(url_for('produto.produtos',mensagem = "Algo deu errado, tente novamente"))

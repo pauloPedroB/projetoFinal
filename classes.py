@@ -55,9 +55,6 @@ class Loja(db.Model):
     def __repr__(self):
         return f'<Loja {self.cnpj}>'
     
-
-
-
 class Administrador(db.Model):
     __tablename__ = 'administradores'
 

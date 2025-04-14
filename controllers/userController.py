@@ -2,6 +2,8 @@ import requests
 from models.Usuario import Usuario
 
 API_URL = "http://localhost:3001/usuarios/"
+SECRET_KEY = 'Projetojavaong123'
+import jwt
 
 
 def buscar(dados_usuario):
@@ -53,11 +55,14 @@ def login(email,senha):
     }
     response = requests.post(API_URL + "login/", json=dados_usuario)
     resposta_json = response.json()
-    mensagem = resposta_json.get('message')
+    print(response.status_code)
 
+    mensagem = resposta_json.get('message')
     if response.status_code != 200:
         return None,mensagem
-    usuario_api = resposta_json.get('usuario')
+    token = resposta_json.get('token')
+    dados = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+    usuario_api = dados['usuario']
 
     usuario = Usuario(id_usuario=usuario_api["id_usuario"],
                       email_usuario=usuario_api["email_usuario"],
