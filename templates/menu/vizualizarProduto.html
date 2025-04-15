@@ -28,7 +28,12 @@
     {% endif %}
 
     <main class="corpo" style="display: block;">
-       <img src="{{ url_for('static', filename='uploads/' + produto.img) }}" alt=""width=300px>
+        {%if produto.img[:5] == 'https'%}
+            <img src="{{produto.img}}" alt="">
+        {%else%}
+            <img src="{{ url_for('static', filename='uploads/' + produto.img) }}" alt="">
+
+        {%endif%}
        <h2>{{produto.nome_produto}}</h2>
        {%if loja%}
             <h2>Distancia: {{loja[2]}}km</h2>

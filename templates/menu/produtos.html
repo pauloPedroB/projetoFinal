@@ -69,17 +69,17 @@
         {% endif %}
         {% if produtos_loja != None%}
                 <h4>Meus Produtos</h4>
-            {% for produto, produto_loja in produtos_loja %}
+            {% for produto_loja in produtos_loja %}
                 <div class="opcao">
                     <a href="/loja/produto/{{produto_loja.id_produto_loja}}">
-                        <h2>{{produto.nome_produto}}</h2>
-                        {%if produto['img'][:5] == 'https'%}
-                            <img src="{{produto.img}}" alt="">
+                        <h2>{{produto_loja.produto.nome_produto}}</h2>
+                        {%if produto_loja.produto.img[:5] == 'https'%}
+                            <img src="{{produto_loja.produto.img}}" alt="">
                         {%else%}
-                            <img src="{{ url_for('static', filename='uploads/' + produto.img) }}" alt="">
+                            <img src="{{ url_for('static', filename='uploads/' + produto_loja.produto.img) }}" alt="">
 
                         {%endif%}
-                        <form action="/loja/desvincular/{{produto.id_produto}}" method="post">
+                        <form action="/loja/desvincular/{{produto_loja.id_produto_loja}}" method="post">
                             <input type="submit" value="Desvincular" style="background-color: red;">
                         </form>
                     </a>

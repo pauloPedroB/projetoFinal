@@ -1,13 +1,10 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session,current_app
-from classes import db,Produto_Loja,Loja
 from models.Produto import Produto
 import os
-from sqlalchemy import func
 import string
-from sqlalchemy import or_
 import nltk
 from nltk.corpus import stopwords,wordnet
-from controllers import produtoController
+from controllers import produtoController,produto_lojaController,lojaController
 
 
 nltk.download('stopwords')
@@ -62,7 +59,7 @@ def pesquisar(pesquisa, categoria = None):
 
     print(palavras_final)
 
-    produtos,mensagem = produtoController.listar(palavras_final,categoria)
+    produtos,recado = produtoController.listar(palavras_final,categoria)
     
     return produtos
 
@@ -84,17 +81,19 @@ def produtos():
         if pesquisa != "" and categoria != "0":
             produtos = pesquisar(pesquisa,categoria)
         elif categoria != "0":
-            produtos,mensagem = produtoController.listar([], categoria)
+            produtos,recado = produtoController.listar([], categoria)
         elif pesquisa:
            produtos = pesquisar(pesquisa)
         else:
-            produtos,mensagem = produtoController.listar([])
+            produtos,recado = produtoController.listar([])
 
         produtos_loja = None
         if typeUser == 2:
-            loja = Loja.query.filter_by(id_usuario=session['user_id']).first()
+            loja, recado = lojaController.buscar({"id_usuario": session['user_id']})
+            if loja == None:
+                return redirect(url_for('menu.principal',mensagem = "Loja não encontrada"))
 
-            produtos_loja = []
+            produtos_loja, recado = produto_lojaController.listarProdutoLoja(loja.id_loja,session['user_id'])
         #categorias = db.session.query(Produto.categoria).distinct().all()
         #categorias_unicas = [c[0] for c in categorias]
         categorias_unicas = []

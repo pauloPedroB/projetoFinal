@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
-from classes import db,Loja,Endereco,Administrador,Produto,Produto_Loja
+from classes import db,Loja,Endereco,Produto,Produto_Loja
 from sqlalchemy import func
 import services.validacoes as validacoes
 import string

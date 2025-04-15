@@ -5,9 +5,9 @@ from datetime import datetime
 import pytz
 from geopy.geocoders import Nominatim, OpenCage
 from geopy.exc import GeocoderTimedOut
-from classes import Endereco,Administrador
 from flask import session,redirect,url_for
 from controllers.userController import buscar
+from controllers import EnderecoController
 
 
 def verificarCadastroCompleto(mensagem=None):
@@ -69,14 +69,13 @@ def verificarEndereco(mensagem=None):
     if mensagem == None:
         mensagem = ""
     
-    endereco = Endereco.query.filter_by(id_usuario=session['user_id']).first()
-    if not endereco:
-        if Administrador.query.filter_by(id_usuario=session['user_id']).first() is None:
+    endereco,mensagem = EnderecoController.buscar({'id_usuario': session['user_id']})
+    if endereco == None:
+        if endereco.usuario.typeUser != 1:
             return redirect(url_for('endereco.cadastro',mensagem = mensagem))
         return None
     session["lat"] = endereco.latitude
     session["long"] = endereco.longitude
-
     return None  # Adicionado para garantir um retorno explícito
 
 

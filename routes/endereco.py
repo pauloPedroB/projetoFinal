@@ -1,9 +1,4 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
-from classes import db,Administrador
-import requests
-import re
-from geopy.exc import GeocoderTimedOut
-from geopy.distance import geodesic
 from controllers import EnderecoController,userController
 from models.Endereco import Endereco
 
@@ -23,7 +18,9 @@ def cadastro():
         if verificarLojaCliente:
             return verificarLojaCliente
         endereco,mensagem = EnderecoController.buscar({'id_usuario': session['user_id']})
-        if  endereco != None or Administrador.query.filter_by(id_usuario=session['user_id']).first():
+        if  endereco != None:
+            return redirect(url_for('menu.principal'))
+        elif endereco.usuario.typeUser == 1:
             return redirect(url_for('menu.principal'))
         mensagem = request.args.get('mensagem')
         if mensagem == None:

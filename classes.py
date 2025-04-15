@@ -55,25 +55,7 @@ class Loja(db.Model):
     def __repr__(self):
         return f'<Loja {self.cnpj}>'
     
-class Administrador(db.Model):
-    __tablename__ = 'administradores'
 
-    id_adm = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    nome = db.Column(db.String(65), nullable=False)
-
-    id_usuario = db.Column(db.Integer, unique=True, nullable=False)
-
-    _usuario_obj = None  # Cache para armazenar o usuário
-
-    @property
-    def usuario(self):
-        """Busca os dados do usuário na API apenas na primeira vez."""
-        if self._usuario_obj is None:
-            self._usuario_obj, _ = buscar({'id_user': self.id_usuario})  # Busca usuário na API
-        return self._usuario_obj
-
-    def __repr__(self):
-        return f'<Administrador {self.id_adm}>'
 
 class Produto(db.Model):
     __tablename__ = 'produtos'
