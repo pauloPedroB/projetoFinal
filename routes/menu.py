@@ -6,7 +6,7 @@ import string
 from sqlalchemy import or_
 import nltk
 from nltk.corpus import stopwords,wordnet
-from controllers import clienteController
+from controllers import clienteController,produto_lojaController
 
 
 nltk.download('stopwords')
@@ -24,7 +24,7 @@ def encontrar_sinonimos(palavra):
             sinonimos.add(lemma.name())
     return list(sinonimos)
 
-def pesquisar(pesquisa):
+def pesquisar(pesquisa,categoria = None):
     #Removendo pontuações
     pesquisa = pesquisa.translate(str.maketrans('', '', string.punctuation))
 
@@ -50,47 +50,7 @@ def pesquisar(pesquisa):
 
     print(palavras_final)
 
-    filtros = [Produto.nome_produto.ilike(f"%{palavra}%") for palavra in palavras_final]
-
-    R = 6371
-    distancia = None
-    typeUser = session['typeUser']
-
-    if(typeUser != 1):
-        distancia = func.round(  
-            R * func.acos(
-                func.cos(func.radians(session["lat"])) * func.cos(func.radians(Endereco.latitude)) *
-                func.cos(func.radians(Endereco.longitude) - func.radians(session["long"])) +
-                func.sin(func.radians(session["lat"])) * func.sin(func.radians(Endereco.latitude))
-            ),
-            2  
-        ).label("distancia")
-
-        produtos = db.session.query(
-            Produto_Loja, Loja, Produto, Endereco, distancia
-        ) \
-            .join(Loja, Produto_Loja.id_loja == Loja.id_loja) \
-            .join(Produto, Produto_Loja.id_produto == Produto.id_produto) \
-            .join(Endereco, Endereco.id_usuario == Loja.id_usuario) \
-            .filter(or_(*filtros)) \
-            .order_by(distancia).limit(20) \
-            .all()
-    else:
-        produtos = db.session.query(
-            Produto_Loja, Loja, Produto
-        ) \
-            .join(Loja, Produto_Loja.id_loja == Loja.id_loja) \
-            .join(Produto, Produto_Loja.id_produto == Produto.id_produto) \
-            .filter(or_(*filtros)) \
-            .limit(20) \
-            .all()
-
-
-    def contar_correspondencias(produto, palavras_final):
-        return sum(1 for palavra in palavras_final if palavra.lower() in produto.Produto.nome_produto.lower())
-
-    # Ordena os produtos pela quantidade de correspondências, do maior para o menor
-    produtos = sorted(produtos, key=lambda p: contar_correspondencias(p, palavras_final), reverse=True)
+    produtos,recado = produto_lojaController.listar(session['user_id'],palavras_final,categoria)
     return produtos
 
 
