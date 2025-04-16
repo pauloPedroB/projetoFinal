@@ -8,6 +8,10 @@ from geopy.exc import GeocoderTimedOut
 from flask import session,redirect,url_for
 from controllers.userController import buscar
 from controllers import EnderecoController
+from models.Usuario import Usuario
+from models.Endereco import Endereco
+
+
 
 
 def verificarCadastroCompleto(mensagem=None):
@@ -15,17 +19,17 @@ def verificarCadastroCompleto(mensagem=None):
         mensagem = ""
     cadastro = verificarCadastro(mensagem)
     if cadastro:
-        return cadastro  # Se precisar redirecionar, retorna imediatamente
+        return cadastro, None  # Se precisar redirecionar, retorna imediatamente
     
-    lojaCliente = verificarLojaCliente(mensagem)
-    if lojaCliente:
-        return lojaCliente  # Se precisar redirecionar, retorna imediatamente
+    usuario = verificarLojaCliente(mensagem)
+    if type(usuario) != Usuario:
+        return usuario, None  # Se precisar redirecionar, retorna imediatamente
     
     endereco = verificarEndereco(mensagem)
-    if endereco:
-        return endereco  # Se precisar redirecionar, retorna imediatamente
+    if type(endereco) != Endereco:  # <-- aqui estava o erro
+        return endereco, None  # Se precisar redirecionar, retorna imediatamente
     
-    return None  # Se todas as verificações passarem, retorna None explicitamente
+    return usuario, endereco
 
 def verificarCadastro(mensagem=None):
     if mensagem == None:
@@ -52,8 +56,7 @@ def verificarLojaCliente(mensagem=None):
         return redirect(url_for('menu.escolha', mensagem=mensagem))
     session['typeUser'] = usuario.typeUser
     
-    return None  # Adicionado para evitar retorno implícito de None
-
+    return usuario
 def verificarUsuario():
     usuario,mensagem = buscar({'id_user': session['user_id']})
     if usuario == None:
@@ -63,7 +66,8 @@ def verificarUsuario():
     if usuario.typeUser != None:
         return redirect(url_for('menu.principal', mensagem="Esse Usuário já possuí cadastro como Cliente, Loja ou Administrador"))
 
-    return None,usuario
+    return usuario
+
 
 def verificarEndereco(mensagem=None):
     if mensagem == None:
@@ -71,12 +75,13 @@ def verificarEndereco(mensagem=None):
     
     endereco,mensagem = EnderecoController.buscar({'id_usuario': session['user_id']})
     if endereco == None:
-        if endereco.usuario.typeUser != 1:
+        usuario,mensagem = buscar({'id_user': session['user_id']})
+        if usuario.typeUser != 1:
             return redirect(url_for('endereco.cadastro',mensagem = mensagem))
         return None
     session["lat"] = endereco.latitude
     session["long"] = endereco.longitude
-    return None  # Adicionado para garantir um retorno explícito
+    return endereco  # Adicionado para garantir um retorno explícito
 
 
 def validar_email(email):

@@ -5,6 +5,7 @@ import string
 import nltk
 from nltk.corpus import stopwords,wordnet
 from controllers import produtoController,produto_lojaController,lojaController
+from models.Usuario import Usuario
 
 
 nltk.download('stopwords')
@@ -66,9 +67,9 @@ def pesquisar(pesquisa, categoria = None):
 @produto_bp.route('/produtos')
 def produtos():
     try:
-        cadastro = validacoes.verificarCadastroCompleto()
-        if cadastro:
-            return cadastro
+        usuario,endereco = validacoes.verificarCadastroCompleto()
+        if type(usuario) != Usuario:
+            return usuario
         typeUser = session['typeUser']
         if typeUser != 1 and typeUser != 2:
             return redirect(url_for('menu.principal',mensagem = "Você não possuí acesso a essa página"))
@@ -104,9 +105,9 @@ def produtos():
 @produto_bp.route('/vizualizar/<id>')
 def vizualizar(id):
     try:
-        cadastro = validacoes.verificarCadastroCompleto()
-        if cadastro:
-            return cadastro
+        usuario,endereco = validacoes.verificarCadastroCompleto()
+        if type(usuario) != Usuario:
+            return usuario
         
         if session['typeUser'] != 1 and session['typeUser'] != 2:
             return redirect(url_for('menu.principal',mensagem = "Você não possuí acesso a essa página"))
@@ -125,9 +126,9 @@ def vizualizar(id):
 def cadastro():
     try:
 
-        cadastro = validacoes.verificarCadastroCompleto()
-        if cadastro:
-            return cadastro
+        usuario,endereco = validacoes.verificarCadastroCompleto()
+        if type(usuario) != Usuario:
+            return usuario
         
         if session['typeUser'] != 1:
             return redirect(url_for('menu.principal',mensagem = "Você não possuí acesso de administrador"))
@@ -142,9 +143,9 @@ def cadastro():
 @produto_bp.route('/cadastrar',methods=['POST'])
 def cadastrar():
     try:
-        cadastro = validacoes.verificarCadastroCompleto()
-        if cadastro:
-            return cadastro
+        usuario,endereco = validacoes.verificarCadastroCompleto()
+        if type(usuario) != Usuario:
+            return usuario
         if session['typeUser'] != 1:
             return redirect(url_for('menu.principal',mensagem = "Você não possuí acesso de administrador"))
             
@@ -182,9 +183,9 @@ def cadastrar():
 @produto_bp.route('/excluir/<id>',methods=['POST'])
 def excluir(id):
     try:
-        cadastro = validacoes.verificarCadastroCompleto()
-        if cadastro:
-            return cadastro
+        usuario,endereco = validacoes.verificarCadastroCompleto()
+        if type(usuario) != Usuario:
+            return usuario
         if session['typeUser'] != 1:
             return redirect(url_for('menu.principal',mensagem = "Você não possuí acesso de administrador"))
             
@@ -205,9 +206,9 @@ def excluir(id):
 @produto_bp.route('/editar/<id>',methods=['POST'])
 def editar(id):
     try:
-        cadastro = validacoes.verificarCadastroCompleto()
-        if cadastro:
-            return cadastro
+        usuario,endereco = validacoes.verificarCadastroCompleto()
+        if type(usuario) != Usuario:
+            return usuario
         if session['typeUser'] != 1:
             return redirect(url_for('menu.principal',mensagem = "Você não possuí acesso de administrador"))
             
@@ -225,9 +226,9 @@ def editar(id):
 @produto_bp.route('/update/<id>',methods=['POST'])
 def update(id):
     try:
-        cadastro = validacoes.verificarCadastroCompleto()
-        if cadastro:
-            return cadastro
+        usuario,endereco = validacoes.verificarCadastroCompleto()
+        if type(usuario) != Usuario:
+            return usuario
         if session['typeUser'] != 1:
             return redirect(url_for('menu.principal',mensagem = "Você não possuí acesso de administrador"))
             

@@ -13,7 +13,6 @@ def buscar(dados_usuario)-> Optional[Endereco]:
     if response.status_code != 200:
         return None,mensagem
     endereco_api = resposta_json.get('endereco')
-
     usuario = Usuario(id_usuario=endereco_api["usuario"]["id_usuario"],
                         email_usuario=endereco_api["usuario"]["email_usuario"],
                         pass_usuario=endereco_api["usuario"]["pass_usuario"],
@@ -32,7 +31,6 @@ def buscar(dados_usuario)-> Optional[Endereco]:
                         longitude = endereco_api['longitude'],
                         usuario = usuario
                         )
-    
     return endereco,mensagem
 
 def criar(endereco:Endereco):
