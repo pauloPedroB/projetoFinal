@@ -86,8 +86,7 @@ def editar(id_endereco):
         mensagem = request.args.get('mensagem')
         if mensagem == None:
             mensagem = ""
-
-        if endereco.id != id_endereco:
+        if str(endereco.id) != id_endereco:
             return redirect(url_for('menu.principal',mensagem = "Você não tem permissão para editar este endereço"))
                 
         return render_template('cadastroEnd.html',mensagem = mensagem, endereco = endereco)
