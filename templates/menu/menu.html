@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menu</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 </head>
 <body>
     <header class="cabeçalho1">
@@ -49,9 +51,18 @@
                             <img src="{{ url_for('static', filename='uploads/' + produto_loja.Produto.img) }}" alt="">
 
                         {%endif%}
+                        <div class = "estrelas">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star-half-stroke"></i>
+                            <i class="fa-regular fa-star"></i>
+                        </div>
                         {%if typeUser != 1 and pesquisa != ""%}
                             <h4>Distância: {{produto_loja.distancia}} km</h4>
                         {%endif%}
+                       
+                       
                     </a>
                 </div>
         {% endfor %}
