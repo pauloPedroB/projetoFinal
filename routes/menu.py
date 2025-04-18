@@ -6,7 +6,7 @@ from sqlalchemy import or_
 import nltk
 from nltk.corpus import stopwords,wordnet
 from models.Usuario import Usuario
-from controllers import clienteController,produto_lojaController,EnderecoController,lojaController
+from controllers import clienteController,produto_lojaController,lojaController, produtoController
 
 
 nltk.download('stopwords')
@@ -41,7 +41,7 @@ def pesquisar(pesquisa = "",categoria = None):
             for parte in partes:
                 if parte not in stop_words:
                     palavras_final.append(parte.lower())
-        if parte not in stop_words:
+        if palavra not in stop_words:
             palavras_final.append(palavra)
     
     palavras_final = list(dict.fromkeys(palavras_final))
@@ -75,16 +75,17 @@ def principal():
         usuario,endereco = validacoes.verificarCadastroCompleto()
         if type(usuario) != Usuario:
             return usuario
+        
         pesquisa = request.args.get('pesquisa',"")
        
         if pesquisa != "": 
            produtos_lojas = pesquisar(pesquisa)
         else:
             produtos_lojas = pesquisar("")
-
-        categorias_unicas = []
+        categorias_unicas,recado = produtoController.listar_categorias()
         typeUser = session['typeUser']
-
+        if produtos_lojas == None:
+            produtos_lojas = []
             
         return render_template('menu/menu.html', mensagem=mensagem,typeUser = typeUser,produtos_lojas = produtos_lojas,pesquisa = pesquisa,categorias = categorias_unicas)
 

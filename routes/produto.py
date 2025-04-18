@@ -97,7 +97,8 @@ def produtos():
             produtos_loja, recado = produto_lojaController.listarProdutoLoja(loja.id_loja,session['user_id'])
         #categorias = db.session.query(Produto.categoria).distinct().all()
         #categorias_unicas = [c[0] for c in categorias]
-        categorias_unicas = []
+        categorias_unicas,recado = produtoController.listar_categorias()
+        
         return render_template('menu/produtos.html', mensagem=mensagem,produtos = produtos, produtos_loja = produtos_loja,typeUser = session['typeUser'],categorias = categorias_unicas,pesquisa = pesquisa,categoria = categoria)
     except Exception as e:
         return redirect(url_for('menu.principal',mensagem = f"Algo deu errado, tente novamente: {e}"))

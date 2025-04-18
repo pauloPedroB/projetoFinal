@@ -10,9 +10,12 @@ import services.validacoes as validacoes
 
 @endereco_bp.route('/cadastro')
 def cadastro():
+    try:
         verificar = validacoes.verificarCadastro()
         if verificar:
             return verificar
+        mensagem = request.args.get('mensagem', "")
+
         lojaCliente = validacoes.verificarLojaCliente(mensagem)
         if type(lojaCliente) != Usuario:
             return lojaCliente
@@ -27,6 +30,8 @@ def cadastro():
         if mensagem == None:
             mensagem = ""
         return render_template('cadastroEnd.html',mensagem = mensagem)
+    except Exception as e:
+        return redirect(url_for('menu.principal', mensagem = f"Algo deu errado, tente novamente: {e}"))
 
 
 @endereco_bp.route('/cadastrar',methods=['POST'])
@@ -35,6 +40,7 @@ def cadastrar():
         verificar = validacoes.verificarCadastro()
         if verificar:
             return verificar
+        mensagem = request.args.get('mensagem', "")
         
         lojaCliente = validacoes.verificarLojaCliente(mensagem)
         if type(lojaCliente) != Usuario:

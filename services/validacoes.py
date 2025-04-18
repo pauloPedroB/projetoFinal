@@ -24,9 +24,8 @@ def verificarCadastroCompleto(mensagem=None):
     usuario = verificarLojaCliente(mensagem)
     if type(usuario) != Usuario:
         return usuario, None  # Se precisar redirecionar, retorna imediatamente
-    
     endereco = verificarEndereco(mensagem)
-    if type(endereco) != Endereco:  # <-- aqui estava o erro
+    if type(endereco) != Endereco and endereco != None:  # <-- aqui estava o erro
         return endereco, None  # Se precisar redirecionar, retorna imediatamente
     
     return usuario, endereco
