@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
 from controllers import EnderecoController,userController
 from models.Endereco import Endereco
-
+from models.Usuario import Usuario
 
 
 endereco_bp = Blueprint('endereco', __name__)
@@ -14,20 +14,24 @@ def cadastro():
         verificar = validacoes.verificarCadastro()
         if verificar:
             return verificar
-        verificarLojaCliente = validacoes.verificarLojaCliente()
-        if verificarLojaCliente:
-            return verificarLojaCliente
+        mensagem = request.args.get('mensagem', "")
+
+        lojaCliente = validacoes.verificarLojaCliente(mensagem)
+        if type(lojaCliente) != Usuario:
+            return lojaCliente
         endereco,mensagem = EnderecoController.buscar({'id_usuario': session['user_id']})
+        usuario,mensagem = userController.buscar({'id_user': session['user_id']})
+
         if  endereco != None:
             return redirect(url_for('menu.principal'))
-        elif endereco.usuario.typeUser == 1:
+        elif usuario.typeUser == 1:
             return redirect(url_for('menu.principal'))
         mensagem = request.args.get('mensagem')
         if mensagem == None:
             mensagem = ""
         return render_template('cadastroEnd.html',mensagem = mensagem)
     except Exception as e:
-            return redirect(url_for('menu.principal',mensagem = f"Algo deu errado, tente novamente: {e}"))
+        return redirect(url_for('menu.principal', mensagem = f"Algo deu errado, tente novamente: {e}"))
 
 
 @endereco_bp.route('/cadastrar',methods=['POST'])
@@ -36,10 +40,11 @@ def cadastrar():
         verificar = validacoes.verificarCadastro()
         if verificar:
             return verificar
+        mensagem = request.args.get('mensagem', "")
         
-        verificarLojaCliente = validacoes.verificarLojaCliente()
-        if verificarLojaCliente:
-            return verificarLojaCliente
+        lojaCliente = validacoes.verificarLojaCliente(mensagem)
+        if type(lojaCliente) != Usuario:
+            return lojaCliente
     
         cep = request.form['CEP']
         rua = request.form['rua']
@@ -77,9 +82,9 @@ def cadastrar():
 @endereco_bp.route('/editar/<id_endereco>')
 def editar(id_endereco):
     try:
-        cadastro = validacoes.verificarCadastroCompleto()
-        if cadastro:
-            return cadastro
+        usuario,endereco = validacoes.verificarCadastroCompleto()
+        if type(usuario) != Usuario:
+            return usuario
         
         if session['typeUser'] == 1:
             return redirect(url_for('menu.principal',mensagem = "Você não possuí acesso à essa página"))
@@ -87,11 +92,7 @@ def editar(id_endereco):
         mensagem = request.args.get('mensagem')
         if mensagem == None:
             mensagem = ""
-        endereco,mensagem = EnderecoController.buscar({'id_endereco': id_endereco})
-        if endereco == None:
-            return redirect(url_for('menu.principal',mensagem = "Endereço não encontrado"))
-        
-        if endereco.usuario.id_usuario != session['user_id']:
+        if str(endereco.id) != id_endereco:
             return redirect(url_for('menu.principal',mensagem = "Você não tem permissão para editar este endereço"))
                 
         return render_template('cadastroEnd.html',mensagem = mensagem, endereco = endereco)
@@ -101,19 +102,15 @@ def editar(id_endereco):
 @endereco_bp.route('/update/<id_endereco>',methods=['POST'])
 def update(id_endereco):
     try:
-        cadastro = validacoes.verificarCadastroCompleto()
-        if cadastro:
-            return cadastro
+        usuario,endereco = validacoes.verificarCadastroCompleto()
+        if type(usuario) != Usuario:
+            return usuario
 
         if session['typeUser'] == 1:
             return redirect(url_for('menu.principal',mensagem = "Você não possuí acesso à essa página"))
         mensagem = request.args.get('mensagem')
         if mensagem == None:
             mensagem = ""
-
-        endereco,mensagem = EnderecoController.buscar({'id_endereco': id_endereco})
-        if not endereco:
-            return redirect(url_for('menu.Principal',mensagem = "Endereço não encontrado"))
         
         cep = request.form['CEP']
         rua = request.form['rua']
@@ -123,7 +120,6 @@ def update(id_endereco):
         cidade = request.form['cidade']
         complemento = request.form['complemento']
 
-        usuario,mensagem = userController.buscar({'id_user': session['user_id']})
         endereco.cep = cep
         endereco.rua = rua
         endereco.nmr = numero
@@ -131,7 +127,6 @@ def update(id_endereco):
         endereco.uf = uf
         endereco.cidade = cidade
         endereco.complemento = complemento
-        endereco.usuario = usuario
         novo_endereco,mensagem = EnderecoController.editar(endereco)
         if(novo_endereco == None):
             return redirect(url_for('endereco.cadastro',mensagem = f"Não foi possível editar o Endereco, {mensagem}"))

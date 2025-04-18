@@ -28,11 +28,20 @@ def listar(nomes = [],categoria = None):
     response = requests.post(API_URL +"listar/", json=dados_usuario)
     resposta_json = response.json()
     mensagem = resposta_json.get('message')
-    print(response.status_code)
     if response.status_code != 200:
         return None,mensagem
     produtos = resposta_json.get('produtos')
     return produtos,mensagem
+
+def listar_categorias():
+
+    response = requests.get(API_URL +"categorias/")
+    resposta_json = response.json()
+    mensagem = resposta_json.get('message')
+    if response.status_code != 200:
+        return None,mensagem
+    categorias = resposta_json.get('categorias')
+    return categorias,mensagem
 
 def criar(produto:Produto):
     dados_usuario = {

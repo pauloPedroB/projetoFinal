@@ -4,6 +4,8 @@ import re
 import services.validacoes as validacoes
 from controllers import lojaController,produtoController,produto_lojaController
 from models.Produto_Loja import Produto_Loja
+from models.Usuario import Usuario
+
 
 
 loja_bp = Blueprint('loja', __name__)
@@ -14,8 +16,9 @@ def cadastro():
         verificar = validacoes.verificarCadastro()
         if verificar:
             return verificar
-        verificarUsuario,usuario = validacoes.verificarUsuario()
-        if verificarUsuario:
+        
+        verificarUsuario = validacoes.verificarUsuario()
+        if type(verificarUsuario) != Usuario:
             return verificarUsuario
         
         mensagem = request.args.get('mensagem')
@@ -32,8 +35,9 @@ def cadastrar():
         verificar = validacoes.verificarCadastro()
         if verificar:
             return verificar
-        verificarUsuario,usuario = validacoes.verificarUsuario()
-        if verificarUsuario:
+        
+        verificarUsuario = validacoes.verificarUsuario()
+        if type(verificarUsuario) != Usuario:
             return verificarUsuario
         
         cnpj_user = request.form['CNPJ']
@@ -55,13 +59,13 @@ def cadastrar():
                       telefone=telefone,
                       celular = celular,
                       abertura = abertura,
-                      usuario = usuario,
+                      usuario = verificarUsuario,
                         )
         nova_loja,mensagem = lojaController.criar(loja)
         if(nova_loja == None):
             return redirect(url_for('loja.cadastro',mensagem = f"Não foi possível vincular seu usuário a uma loja, {mensagem}"))
-        usuario.typeUser = 2        
-        session['typeUser'] = usuario.typeUser
+        verificarUsuario.typeUser = 2        
+        session['typeUser'] = verificarUsuario.typeUser
 
         return redirect(url_for('endereco.cadastro'))
         
@@ -71,9 +75,9 @@ def cadastrar():
 @loja_bp.route('/vincular/<id_produto>',methods=['POST'])
 def vincular(id_produto):
     try:
-        verificar = validacoes.verificarCadastroCompleto()
-        if verificar:
-            return verificar
+        usuario,endereco = validacoes.verificarCadastroCompleto()
+        if type(usuario) != Usuario:
+            return usuario
         
         typeUser = session['typeUser']
         if typeUser != 2:
@@ -107,9 +111,9 @@ def vincular(id_produto):
 @loja_bp.route('/desvincular/<id_produto>',methods=['POST'])
 def desvincular(id_produto):
     try:
-        verificar = validacoes.verificarCadastroCompleto()
-        if verificar:
-            return verificar
+        usuario,endereco = validacoes.verificarCadastroCompleto()
+        if type(usuario) != Usuario:
+            return usuario
         
         typeUser = session['typeUser']
         if typeUser != 2:
@@ -132,9 +136,9 @@ def desvincular(id_produto):
         return redirect(url_for('produto.produtos',mensagem = "Algo deu errado, tente novamente"))
 @loja_bp.route('/produto/<id_produto>')
 def produto(id_produto):
-        verificar = validacoes.verificarCadastroCompleto()
-        if verificar:
-            return verificar
+        usuario,endereco = validacoes.verificarCadastroCompleto()
+        if type(usuario) != Usuario:
+            return usuario
                 
         mensagem = request.args.get('mensagem')
         if mensagem == None:
@@ -142,7 +146,7 @@ def produto(id_produto):
         typeUser = session['typeUser']
 
         produto_loja,endereco_user,mensagem = produto_lojaController.buscar({'id_produto_loja': id_produto, 'id_usuario': session['user_id']})
-        distancia = produto_loja.distancia
+        distancia = "%.2f" % produto_loja.distancia
         loja = produto_loja.loja
         endereco_loja = produto_loja.endereco
         produto = produto_loja.produto

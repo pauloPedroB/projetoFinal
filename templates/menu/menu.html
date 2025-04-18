@@ -43,12 +43,12 @@
         {% for produto_loja in produtos_lojas %}
             
                 <div class="opcao">
-                    <a href="/loja/produto/{{produto_loja.Produto_Loja.id_produto_loja}}">
-                        <h2>{{produto_loja.Produto.nome_produto}}</h2>
-                        {%if produto_loja.Produto.img[:5] == 'https'%}
-                            <img src="{{produto_loja.Produto.img}}" alt="">
+                    <a href="/loja/produto/{{produto_loja.id_produto_loja}}">
+                        <h2>{{produto_loja.produto.nome_produto}}</h2>
+                        {%if produto_loja.produto.img[:5] == 'https'%}
+                            <img src="{{produto_loja.produto.img}}" alt="">
                         {%else%}
-                            <img src="{{ url_for('static', filename='uploads/' + produto_loja.Produto.img) }}" alt="">
+                            <img src="{{ url_for('static', filename='uploads/' + produto_loja.produto.img) }}" alt="">
 
                         {%endif%}
                         <div class = "estrelas">

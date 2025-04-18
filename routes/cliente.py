@@ -3,6 +3,8 @@ import re
 import services.validacoes as validacoes
 from controllers import clienteController
 from models.Cliente import Cliente
+from models.Usuario import Usuario
+
 
 
 cliente_bp = Blueprint('cliente', __name__)
@@ -14,8 +16,8 @@ def cadastro():
         verificar = validacoes.verificarCadastro()
         if verificar:
             return verificar
-        verificarUsuario,usuario = validacoes.verificarUsuario()
-        if verificarUsuario:
+        verificarUsuario = validacoes.verificarUsuario()
+        if type(verificarUsuario) != Usuario:
             return verificarUsuario
         
         mensagem = request.args.get('mensagem')
@@ -32,8 +34,8 @@ def cadastrar():
         verificar = validacoes.verificarCadastro()
         if verificar:
             return verificar
-        verificarUsuario,usuario = validacoes.verificarUsuario()
-        if verificarUsuario:
+        verificarUsuario = validacoes.verificarUsuario()
+        if type(verificarUsuario) != Usuario:
             return verificarUsuario
         cpf = request.form['CPF']
         nome = request.form['name']
@@ -58,13 +60,13 @@ def cadastrar():
             dtNascimento=dtNascimento,
             genero = genero,
             carro = carro,
-            usuario = usuario,
+            usuario = verificarUsuario,
         )
         novo_Cliente,mensagem = clienteController.criar(cliente)
         if(novo_Cliente == None):
             return redirect(url_for('cliente.cadastro',mensagem = f"Não foi possível cadastrar o Cliente, {mensagem}"))
-        usuario.typeUser = 3
-        session['typeUser'] = usuario.typeUser
+        verificarUsuario.typeUser = 3
+        session['typeUser'] = verificarUsuario.typeUser
         
         return redirect(url_for('endereco.cadastro'))
     
@@ -74,9 +76,9 @@ def cadastrar():
 @cliente_bp.route('/editar/<id_cliente>')
 def editar(id_cliente):
     try:
-        cadastro = validacoes.verificarCadastroCompleto()
-        if cadastro:
-            return cadastro
+        usuario,endereco = validacoes.verificarCadastroCompleto()
+        if type(usuario) != Usuario:
+            return usuario
         cliente, mensagem = clienteController.buscar({"id_cliente": id_cliente})
         if not cliente:
             return redirect(url_for('menu.principal',mensagem = "Cliente não encontrado"))

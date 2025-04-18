@@ -1,12 +1,12 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
-from classes import db,Loja,Endereco,Produto,Produto_Loja
 from sqlalchemy import func
 import services.validacoes as validacoes
 import string
 from sqlalchemy import or_
 import nltk
 from nltk.corpus import stopwords,wordnet
-from controllers import clienteController
+from models.Usuario import Usuario
+from controllers import clienteController,produto_lojaController,lojaController, produtoController
 
 
 nltk.download('stopwords')
@@ -24,7 +24,7 @@ def encontrar_sinonimos(palavra):
             sinonimos.add(lemma.name())
     return list(sinonimos)
 
-def pesquisar(pesquisa):
+def pesquisar(pesquisa = "",categoria = None):
     #Removendo pontuações
     pesquisa = pesquisa.translate(str.maketrans('', '', string.punctuation))
 
@@ -41,7 +41,7 @@ def pesquisar(pesquisa):
             for parte in partes:
                 if parte not in stop_words:
                     palavras_final.append(parte.lower())
-        if parte not in stop_words:
+        if palavra not in stop_words:
             palavras_final.append(palavra)
     
     palavras_final = list(dict.fromkeys(palavras_final))
@@ -50,47 +50,7 @@ def pesquisar(pesquisa):
 
     print(palavras_final)
 
-    filtros = [Produto.nome_produto.ilike(f"%{palavra}%") for palavra in palavras_final]
-
-    R = 6371
-    distancia = None
-    typeUser = session['typeUser']
-
-    if(typeUser != 1):
-        distancia = func.round(  
-            R * func.acos(
-                func.cos(func.radians(session["lat"])) * func.cos(func.radians(Endereco.latitude)) *
-                func.cos(func.radians(Endereco.longitude) - func.radians(session["long"])) +
-                func.sin(func.radians(session["lat"])) * func.sin(func.radians(Endereco.latitude))
-            ),
-            2  
-        ).label("distancia")
-
-        produtos = db.session.query(
-            Produto_Loja, Loja, Produto, Endereco, distancia
-        ) \
-            .join(Loja, Produto_Loja.id_loja == Loja.id_loja) \
-            .join(Produto, Produto_Loja.id_produto == Produto.id_produto) \
-            .join(Endereco, Endereco.id_usuario == Loja.id_usuario) \
-            .filter(or_(*filtros)) \
-            .order_by(distancia).limit(20) \
-            .all()
-    else:
-        produtos = db.session.query(
-            Produto_Loja, Loja, Produto
-        ) \
-            .join(Loja, Produto_Loja.id_loja == Loja.id_loja) \
-            .join(Produto, Produto_Loja.id_produto == Produto.id_produto) \
-            .filter(or_(*filtros)) \
-            .limit(20) \
-            .all()
-
-
-    def contar_correspondencias(produto, palavras_final):
-        return sum(1 for palavra in palavras_final if palavra.lower() in produto.Produto.nome_produto.lower())
-
-    # Ordena os produtos pela quantidade de correspondências, do maior para o menor
-    produtos = sorted(produtos, key=lambda p: contar_correspondencias(p, palavras_final), reverse=True)
+    produtos,recado = produto_lojaController.listar(session['user_id'],palavras_final,categoria)
     return produtos
 
 
@@ -100,8 +60,8 @@ def escolha():
     if verificar:  
         return verificar
     
-    verificarUsuario,usuario = validacoes.verificarUsuario()
-    if verificarUsuario:
+    verificarUsuario = validacoes.verificarUsuario()
+    if type(verificarUsuario) != Usuario:
         return verificarUsuario
     mensagem = request.args.get('menu/mensagem', "")
     
@@ -112,25 +72,20 @@ def principal():
     try:
         mensagem = request.args.get('mensagem', "")
 
-        cadastro = validacoes.verificarCadastroCompleto(mensagem)
-        if cadastro:
-            return cadastro
+        usuario,endereco = validacoes.verificarCadastroCompleto()
+        if type(usuario) != Usuario:
+            return usuario
+        
         pesquisa = request.args.get('pesquisa',"")
        
         if pesquisa != "": 
            produtos_lojas = pesquisar(pesquisa)
-           print(produtos_lojas)      
         else:
-             produtos_lojas = db.session.query(Produto_Loja, Loja, Produto) \
-            .join(Loja, Produto_Loja.id_loja == Loja.id_loja) \
-            .join(Produto, Produto_Loja.id_produto == Produto.id_produto) \
-            .order_by(func.random()) \
-            .limit(20) \
-            .all()
-        categorias = db.session.query(Produto.categoria).distinct().all()
-        categorias_unicas = [c[0] for c in categorias]
+            produtos_lojas = pesquisar("")
+        categorias_unicas,recado = produtoController.listar_categorias()
         typeUser = session['typeUser']
-
+        if produtos_lojas == None:
+            produtos_lojas = []
             
         return render_template('menu/menu.html', mensagem=mensagem,typeUser = typeUser,produtos_lojas = produtos_lojas,pesquisa = pesquisa,categorias = categorias_unicas)
 
@@ -141,21 +96,21 @@ def principal():
 @menu_bp.route('/dados')
 def dados():
     try:
-        cadastro = validacoes.verificarCadastroCompleto()
-        if cadastro:
-            return cadastro
+        usuario,endereco = validacoes.verificarCadastroCompleto()
+        if type(usuario) != Usuario:
+            return usuario
         typeUser = session['typeUser']
         mensagem = request.args.get('mensagem', "")
         if typeUser == 1:
             return redirect(url_for('menu.principal', mensagem="Você não possuí acesso a essa página",typeUser = typeUser))
 
         if typeUser == 2:
-            dados = Loja.query.filter_by(id_usuario = session['user_id']).first()
+            dados, mensagem = lojaController.buscar({"id_usuario": session['user_id']})
         if typeUser == 3:
             dados, mensagem = clienteController.buscar({"id_usuario": session['user_id']})
         if not dados:
             return redirect(url_for('menu.principal', mensagem="Não encontramos um Cliente ou Loja vinculado ao seu Usuário",typeUser = typeUser))
-        endereco = Endereco.query.filter_by(id_usuario=session['user_id']).first()
+
 
 
             
