@@ -1,14 +1,18 @@
 import requests
 from models.Usuario import Usuario
+from flask import session
+
 
 API_URL = "http://localhost:3001/usuarios/"
-SECRET_KEY = 'Projetojavaong123'
 import jwt
 
 
 def buscar(dados_usuario):
- 
-    response = requests.post(API_URL +"buscar/", json=dados_usuario)
+    
+    headers = {
+        "Authorization": f"Bearer {session['token']}"
+    }
+    response = requests.post(API_URL +"buscar/", json=dados_usuario,headers=headers)
     resposta_json = response.json()
     mensagem = resposta_json.get('message')
     print(dados_usuario)
@@ -61,16 +65,16 @@ def login(email,senha):
     if response.status_code != 200:
         return None,mensagem
     token = resposta_json.get('token')
-    dados = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+    dados = jwt.decode(token, options={"verify_signature": False})
     usuario_api = dados['usuario']
-
+    
     usuario = Usuario(id_usuario=usuario_api["id_usuario"],
                       email_usuario=usuario_api["email_usuario"],
                       pass_usuario=usuario_api["pass_usuario"],
                       verificado=usuario_api["verificado"],
                       typeUser = usuario_api["typeUser"])
     
-    return usuario,mensagem
+    return usuario, token ,mensagem
     
 def resetarSenha(senha, confirmacao_senha, id_token):
 

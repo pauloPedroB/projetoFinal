@@ -81,11 +81,12 @@ def entrar():
         nome = request.form['email']
         senha = request.form['password']
 
-        usuario,mensagem = login(nome,senha)
+        usuario, token ,mensagem = login(nome,senha)
         
         if usuario == None:
             return redirect(url_for('auth.inicio', mensagem=mensagem))
-
+        
+        session['token'] = token
         session['user_id'] = usuario.id_usuario
         session['user_email'] = usuario.email_usuario
         session['user_verificado'] = usuario.verificado
