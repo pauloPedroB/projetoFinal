@@ -62,9 +62,8 @@ def cadastrar():
         
         if novo_usuario == None:
             return redirect(url_for('auth.cadastro', mensagem=mensagem))
-        session['user_id'] = novo_usuario.id_usuario
-        session['user_email'] = novo_usuario.email_usuario
-        mensagem = criarToken(1, session['user_id'], session['user_email'])
+        
+        mensagem = criarToken(1, novo_usuario.id_usuario, novo_usuario.email_usuario)
 
         return redirect(url_for('menu.escolha',mensagem))
             
@@ -81,16 +80,12 @@ def entrar():
         nome = request.form['email']
         senha = request.form['password']
 
-        usuario, token ,mensagem = login(nome,senha)
+        usuario ,mensagem = login(nome,senha)
         
         if usuario == None:
             return redirect(url_for('auth.inicio', mensagem=mensagem))
         
-        session['token'] = token
-        session['user_id'] = usuario.id_usuario
-        session['user_email'] = usuario.email_usuario
-        session['user_verificado'] = usuario.verificado
-        session['typeUser'] = usuario.typeUser
+        
         return redirect(url_for('menu.principal',mensagem = mensagem))
         
     
@@ -126,6 +121,7 @@ def validar(id_token):
             return redirect(url_for('auth.inicio', mensagem=f"Erro ao processar o token: {mensagem}"))
 
         session['user_verificado'] = mensagem
+        session.pop('token', None)
         return redirect(url_for('menu.escolha'))
 
     except Exception as e:

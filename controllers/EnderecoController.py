@@ -2,17 +2,36 @@ import requests
 from models.Endereco import Endereco
 from models.Usuario import Usuario
 from typing import Optional
+from flask import session
+from controllers import lojaController
+from controllers import clienteController
+import jwt
+
 
 API_URL = "http://localhost:3001/enderecos/"
 
-def buscar(dados_usuario)-> Optional[Endereco]:
-    response = requests.post(API_URL +"id_user/", json=dados_usuario)
+def buscar()-> Optional[Endereco]:
+
+    if not 'token_dados' in session:
+        if session['typeUser'] == 2:
+            lojaController.buscar({"id_usuario": session['user_id']})
+        elif session['typeUser'] == 3:
+            clienteController.buscar({"id_usuario": session['user_id']})
+
+    headers = {
+                    "Authorization": f"Bearer {session['token']}",
+                    "token_dados": f"{session['token_dados']}"
+
+                }
+    response = requests.post(API_URL +"id_user/",headers=headers)
     resposta_json = response.json()
     mensagem = resposta_json.get('message')
     print(f'resposta {mensagem}')
     if response.status_code != 200:
         return None,mensagem
-    endereco_api = resposta_json.get('endereco')
+    token_endereco = resposta_json.get('token_endereco')
+    dados = jwt.decode(token_endereco, options={"verify_signature": False})
+    endereco_api = dados['endereco']
     usuario = Usuario(id_usuario=endereco_api["usuario"]["id_usuario"],
                         email_usuario=endereco_api["usuario"]["email_usuario"],
                         pass_usuario=endereco_api["usuario"]["pass_usuario"],
@@ -43,9 +62,13 @@ def criar(endereco:Endereco):
             "complemento": endereco.complemento,
             "uf": endereco.uf,
             "nmr": endereco.nmr,
-            "id_usuario": endereco.usuario.id_usuario,
         }
-    response = requests.post(API_URL +"criar/", json=dados_usuario)
+    headers = {
+                    "Authorization": f"Bearer {session['token']}",
+                    "token_dados": f"{session['token_dados']}"
+
+                }
+    response = requests.post(API_URL +"criar/", json=dados_usuario,headers=headers)
     print(response.status_code)
 
     resposta_json = response.json()
@@ -53,7 +76,9 @@ def criar(endereco:Endereco):
 
     if response.status_code != 201:
         return None,mensagem
-    endereco_api = resposta_json.get('novo_endereco')
+    token_endereco = resposta_json.get('token_endereco')
+    dados = jwt.decode(token_endereco, options={"verify_signature": False})
+    endereco_api = dados['endereco']
 
     usuario = Usuario(id_usuario=endereco_api["usuario"]["id_usuario"],
                         email_usuario=endereco_api["usuario"]["email_usuario"],
@@ -85,10 +110,14 @@ def editar(endereco:Endereco):
         "complemento": endereco.complemento,
         "uf": endereco.uf,
         "nmr": endereco.nmr,
-        "id_usuario": endereco.usuario.id_usuario,
         "id_endereco": endereco.id,
     }
-    response = requests.post(API_URL +"editar/", json=dados_usuario)
+    headers = {
+                    "Authorization": f"Bearer {session['token']}",
+                    "token_dados": f"{session['token_dados']}"
+
+                }
+    response = requests.post(API_URL +"editar/", json=dados_usuario,headers=headers)
     print(response.status_code)
 
     resposta_json = response.json()
@@ -96,7 +125,9 @@ def editar(endereco:Endereco):
 
     if response.status_code != 201:
         return None,mensagem
-    endereco_api = resposta_json.get('novo_endereco')
+    token_endereco = resposta_json.get('token_endereco')
+    dados = jwt.decode(token_endereco, options={"verify_signature": False})
+    endereco_api = dados['endereco']
 
     usuario = Usuario(id_usuario=endereco_api["usuario"]["id_usuario"],
                         email_usuario=endereco_api["usuario"]["email_usuario"],

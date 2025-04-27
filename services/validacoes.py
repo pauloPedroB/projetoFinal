@@ -50,10 +50,8 @@ def verificarLojaCliente(mensagem=None):
     if usuario == None:
         session.clear()
         return redirect(url_for('auth.inicio', mensagem=mensagem))
-
     if usuario.typeUser == None:
         return redirect(url_for('menu.escolha', mensagem=mensagem))
-    session['typeUser'] = usuario.typeUser
     
     return usuario
 def verificarUsuario():
@@ -72,7 +70,7 @@ def verificarEndereco(mensagem=None):
     if mensagem == None:
         mensagem = ""
     
-    endereco,mensagem = EnderecoController.buscar({'id_usuario': session['user_id']})
+    endereco,mensagem = EnderecoController.buscar()
     if endereco == None:
         usuario,mensagem = buscar({'id_user': session['user_id']})
         if usuario.typeUser != 1:

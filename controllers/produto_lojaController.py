@@ -8,17 +8,26 @@ from models.Endereco import Endereco
 from typing import Optional
 
 
+from flask import session
 
 
 
 API_URL = "http://localhost:3001/produtos_loja/"
 
 def buscar(dados_usuario)-> Optional[Produto_Loja]:
-    response = requests.post(API_URL +"buscar/", json=dados_usuario)
+    if 'token' in session:
+        headers = {
+                    "Authorization": f"Bearer {session['token']}"
+                }
+        response = requests.post(API_URL +"buscar/", json=dados_usuario,headers=headers)
+    else:
+        response = requests.post(API_URL +"buscar/", json=dados_usuario)
+
     resposta_json = response.json()
     mensagem = resposta_json.get('message')
+    print(mensagem)
     if response.status_code != 200:
-        return None,mensagem
+        return None,None,mensagem
     produto_loja_api = resposta_json.get('produto_loja')
     distancia = resposta_json.get('distancia')
     endereco_user = resposta_json.get('endereco')
@@ -75,16 +84,21 @@ def buscar(dados_usuario)-> Optional[Produto_Loja]:
         
     return produto_loja,endereco_user, mensagem
 
-def listarProdutoLoja(id_loja, id_usuario):
-    dados_usuario = {
-            "id_loja": id_loja,
-            "id_usuario": id_usuario,
-        }
-    response = requests.post(API_URL +"listarProdutosLoja/", json=dados_usuario)
+def listarProdutoLoja():
+    headers = {
+                    "Authorization": f"Bearer {session['token']}",
+                    "token_dados": f"{session['token_dados']}"
+
+                }
+  
+    response = requests.post(API_URL +"listarProdutosLoja/",headers=headers)
     resposta_json = response.json()
     mensagem = resposta_json.get('message')
 
     if response.status_code != 200:
+        print(response.status_code)
+
+        print(mensagem)
         return None,mensagem
     produtos_loja_api = resposta_json.get('produtos_loja')
     if(produtos_loja_api == None):
@@ -128,17 +142,23 @@ def listarProdutoLoja(id_loja, id_usuario):
        
     return produtos_loja, mensagem
 
-def listar(id_usuario,nomes = [],categoria = None ):
+def listar(nomes = [],categoria = None ):
     dados_usuario = {
             "nomes": nomes,
             "categoria": categoria,
-            "id_usuario": id_usuario,
         }
-    response = requests.post(API_URL +"listar/", json=dados_usuario)
+    if 'token' in session:
+        headers = {
+                    "Authorization": f"Bearer {session['token']}"
+                }
+        response = requests.post(API_URL +"listar/", json=dados_usuario,headers=headers)
+    else:
+        response = requests.post(API_URL +"listar/", json=dados_usuario)
+
     resposta_json = response.json()
     mensagem = resposta_json.get('message')
 
-    
+    print(mensagem)
     if response.status_code != 200:
         return None,mensagem
     produtos_loja_api = resposta_json.get('produtos_loja')
@@ -195,13 +215,17 @@ def listar(id_usuario,nomes = [],categoria = None ):
        
     return produtos_loja, mensagem
 
-def criar(produto_loja:Produto_Loja,id_usuario:int):
+def criar(produto_loja:Produto_Loja):
     dados_usuario = {
-        "id_loja": produto_loja.loja.id_loja,
         "id_produto": produto_loja.produto.id_produto,
-        "id_usuario": id_usuario
         }
-    response = requests.post(API_URL +"criar/", json=dados_usuario)
+    headers = {
+                    "Authorization": f"Bearer {session['token']}",
+                    "token_dados": f"{session['token_dados']}"
+
+                }
+  
+    response = requests.post(API_URL +"criar/", json=dados_usuario,headers=headers)
     resposta_json = response.json()
 
     mensagem = resposta_json.get('message')
@@ -212,13 +236,17 @@ def criar(produto_loja:Produto_Loja,id_usuario:int):
     return True,mensagem
 
 
-def excluir(produto_loja:Produto_Loja,id_usuario:int):
+def excluir(produto_loja:Produto_Loja):
     dados_usuario = {
         "id_produto_loja": produto_loja.id_produto_loja,
-        "id_usuario": id_usuario
         }
+    headers = {
+                    "Authorization": f"Bearer {session['token']}",
+                    "token_dados": f"{session['token_dados']}"
+
+                }
     print(produto_loja.id_produto_loja)
-    response = requests.delete(API_URL +"excluir/", json=dados_usuario)
+    response = requests.delete(API_URL +"excluir/", json=dados_usuario,headers=headers)
     resposta_json = response.json()
 
     mensagem = resposta_json.get('message')

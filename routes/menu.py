@@ -6,7 +6,7 @@ from sqlalchemy import or_
 import nltk
 from nltk.corpus import stopwords,wordnet
 from models.Usuario import Usuario
-from controllers import clienteController,produto_lojaController,lojaController, produtoController
+from controllers import clienteController,produto_lojaController,lojaController, produtoController,userController,EnderecoController
 
 
 nltk.download('stopwords')
@@ -50,7 +50,7 @@ def pesquisar(pesquisa = "",categoria = None):
 
     print(palavras_final)
 
-    produtos,recado = produto_lojaController.listar(session['user_id'],palavras_final,categoria)
+    produtos,recado = produto_lojaController.listar(palavras_final,categoria)
     return produtos
 
 
@@ -72,9 +72,23 @@ def principal():
     try:
         mensagem = request.args.get('mensagem', "")
 
-        usuario,endereco = validacoes.verificarCadastroCompleto()
-        if type(usuario) != Usuario:
-            return usuario
+        if 'token' in session:
+            if 'user_verificado' not in session or session['user_verificado'] is None:
+                return redirect(url_for('auth.verificarEmail',mensagem = mensagem))
+            usuario,mensagem = userController.buscar({'id_user': session['user_id']})
+            if usuario == None:
+                session.clear()
+                return redirect(url_for('auth.inicio', mensagem=mensagem))
+            if usuario.typeUser == None:
+                return redirect(url_for('menu.escolha', mensagem=mensagem))
+            endereco,mensagem = EnderecoController.buscar()
+            if endereco == None:
+                if usuario.typeUser != 1:
+                    return redirect(url_for('endereco.cadastro',mensagem = mensagem))
+                return None
+            session["lat"] = endereco.latitude
+            session["long"] = endereco.longitude
+       
         
         pesquisa = request.args.get('pesquisa',"")
        
@@ -83,7 +97,10 @@ def principal():
         else:
             produtos_lojas = pesquisar("")
         categorias_unicas,recado = produtoController.listar_categorias()
-        typeUser = session['typeUser']
+        if 'typeUser' in session:
+            typeUser = session['typeUser']
+        else:
+            typeUser = 0
         if produtos_lojas == None:
             produtos_lojas = []
             
@@ -99,7 +116,7 @@ def dados():
         usuario,endereco = validacoes.verificarCadastroCompleto()
         if type(usuario) != Usuario:
             return usuario
-        typeUser = session['typeUser']
+        typeUser = usuario.typeUser
         mensagem = request.args.get('mensagem', "")
         if typeUser == 1:
             return redirect(url_for('menu.principal', mensagem="Você não possuí acesso a essa página",typeUser = typeUser))
@@ -109,7 +126,7 @@ def dados():
         if typeUser == 3:
             dados, mensagem = clienteController.buscar({"id_usuario": session['user_id']})
         if not dados:
-            return redirect(url_for('menu.principal', mensagem="Não encontramos um Cliente ou Loja vinculado ao seu Usuário",typeUser = typeUser))
+            return redirect(url_for('menu.principal', mensagem=mensagem,typeUser = typeUser))
 
 
 
@@ -117,8 +134,7 @@ def dados():
         return render_template('menu/dados.html', mensagem=mensagem,typeUser = session['typeUser'],dados = dados,endereco = endereco)
 
     except Exception as e:
-        session.clear()
-        return redirect(url_for('auth.inicio',mensagem = f"Erro ao acessar o Sistema {e}"))
+        return redirect(url_for('menu.principal',mensagem = f"Erro ao acessar o Sistema {e}"))
 
 
 

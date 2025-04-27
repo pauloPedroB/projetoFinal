@@ -19,7 +19,7 @@ def cadastro():
         lojaCliente = validacoes.verificarLojaCliente(mensagem)
         if type(lojaCliente) != Usuario:
             return lojaCliente
-        endereco,mensagem = EnderecoController.buscar({'id_usuario': session['user_id']})
+        endereco,mensagem = EnderecoController.buscar()
         usuario,mensagem = userController.buscar({'id_user': session['user_id']})
 
         if  endereco != None:

@@ -69,8 +69,8 @@ def cadastrar():
 
         return redirect(url_for('endereco.cadastro'))
         
-    except:
-        return redirect(url_for('loja.cadastro',mensagem = "Algo deu errado, tente novamente"))
+    except Exception as e:
+        return redirect(url_for('loja.cadastro',mensagem = f"Algo deu errado, tente novamente {e}"))
 
 @loja_bp.route('/vincular/<id_produto>',methods=['POST'])
 def vincular(id_produto):
@@ -100,7 +100,7 @@ def vincular(id_produto):
             None
         )
         
-        criado, mensagem = produto_lojaController.criar(produto_loja,session['user_id'])
+        criado, mensagem = produto_lojaController.criar(produto_loja)
         if(criado == False):
             return redirect(url_for('produto.produtos',mensagem = f"Produto Não vinculado a sua Loja: {mensagem}"))
 
@@ -123,30 +123,34 @@ def desvincular(id_produto):
         if mensagem == None:
             mensagem = ""
         
-        produto_loja,endereco_user,mensagem = produto_lojaController.buscar({'id_produto_loja': id_produto, 'id_usuario': session['user_id']})
+        produto_loja,endereco_user,mensagem = produto_lojaController.buscar({'id_produto_loja': id_produto})
         
         if not produto_loja:
             return redirect(url_for('produto.produtos',mensagem = "Esse produto não foi vinculado à sua loja anteriormente"))
-        excluir, mensagem = produto_lojaController.excluir(produto_loja,session['user_id'])
+        excluir, mensagem = produto_lojaController.excluir(produto_loja)
         if(excluir == False):
             return redirect(url_for('produto.produtos',mensagem = f"Produto Não desvinculado a sua Loja {mensagem}"))
         
         return redirect(url_for('produto.produtos',mensagem = "Produto desvinculado a sua Loja"))
-    except:
-        return redirect(url_for('produto.produtos',mensagem = "Algo deu errado, tente novamente"))
+    except Exception as e:
+        return redirect(url_for('produto.produtos',mensagem = f"Algo deu errado, tente novamente {e}"))
 @loja_bp.route('/produto/<id_produto>')
 def produto(id_produto):
-        usuario,endereco = validacoes.verificarCadastroCompleto()
-        if type(usuario) != Usuario:
-            return usuario
-                
+        
         mensagem = request.args.get('mensagem')
         if mensagem == None:
             mensagem = ""
-        typeUser = session['typeUser']
+        if 'typeUser' in session:
+            typeUser = session['typeUser']
+        else:
+            typeUser = 0
 
-        produto_loja,endereco_user,mensagem = produto_lojaController.buscar({'id_produto_loja': id_produto, 'id_usuario': session['user_id']})
-        distancia = "%.2f" % produto_loja.distancia
+        produto_loja,endereco_user,mensagem = produto_lojaController.buscar({'id_produto_loja': id_produto})
+        distancia = 'Entre em nosso sistema para descobrir produtos mais próximos de você'
+
+        if(produto_loja.distancia != None):
+            distancia = "%.2f" % produto_loja.distancia
+
         loja = produto_loja.loja
         endereco_loja = produto_loja.endereco
         produto = produto_loja.produto

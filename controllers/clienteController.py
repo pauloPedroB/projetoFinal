@@ -1,17 +1,39 @@
 import requests
 from models.Cliente import Cliente
 from models.Usuario import Usuario
+from flask import session
+import jwt
+import time
+
 
 
 API_URL = "http://localhost:3001/clientes/"
 
 def buscar(dados_usuario):
-    response = requests.post(API_URL +"id_user/", json=dados_usuario)
-    resposta_json = response.json()
-    mensagem = resposta_json.get('message')
-    if response.status_code != 200:
-        return None,mensagem
-    cliente_api = resposta_json.get('cliente')
+    if 'token_dados' in session:
+        dados = jwt.decode(session['token_dados'], options={"verify_signature": False})
+        cliente_api = dados['cliente']
+        exp = dados['exp']
+        if not exp:
+            return None,"Token não tem campo 'exp'"
+
+        agora = int(time.time())
+        if agora >= exp:
+            return None,"Token expirado"
+        mensagem = 'Cliente encontrado'
+    else:
+        headers = {
+            "Authorization": f"Bearer {session['token']}"
+        }
+        response = requests.post(API_URL +"id_user/", json=dados_usuario,headers=headers)
+        resposta_json = response.json()
+        mensagem = resposta_json.get('message')
+        if response.status_code != 200:
+            return None,mensagem
+        token_dados = resposta_json.get('token_dados')
+        dados = jwt.decode(token_dados, options={"verify_signature": False})
+        cliente_api = dados['cliente']
+        session['token_dados'] = token_dados
 
     usuario = Usuario(id_usuario=cliente_api["usuario"]["id_usuario"],
                         email_usuario=cliente_api["usuario"]["email_usuario"],
@@ -39,16 +61,20 @@ def criar(cliente:Cliente):
             "telefone": cliente.telefone,
             "genero": cliente.genero,
             "carro": cliente.carro,
-            "id_usuario": cliente.usuario.id_usuario,
 
         }
-    response = requests.post(API_URL +"criar/", json=dados_usuario)
+    headers = {
+        "Authorization": f"Bearer {session['token']}"
+    }
+    response = requests.post(API_URL +"criar/", json=dados_usuario,headers=headers)
     resposta_json = response.json()
     mensagem = resposta_json.get('message')
     print(response.status_code)
     if response.status_code != 201:
         return None,mensagem
-    cliente_api = resposta_json.get('novo_cliente')
+    token_dados = resposta_json.get('token_dados')
+    dados = jwt.decode(token_dados, options={"verify_signature": False})
+    cliente_api = dados['cliente']
 
     usuario = Usuario(id_usuario=cliente_api["usuario"]["id_usuario"],
                         email_usuario=cliente_api["usuario"]["email_usuario"],
@@ -65,5 +91,8 @@ def criar(cliente:Cliente):
                       carro = cliente_api["genero"],
                       usuario = usuario,
                         )
+    
+    session['token_dados'] = token_dados
+    session.pop('token', None)
     
     return cliente,mensagem

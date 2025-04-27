@@ -94,9 +94,8 @@ def produtos():
             if loja == None:
                 return redirect(url_for('menu.principal',mensagem = "Loja não encontrada"))
 
-            produtos_loja, recado = produto_lojaController.listarProdutoLoja(loja.id_loja,session['user_id'])
-        #categorias = db.session.query(Produto.categoria).distinct().all()
-        #categorias_unicas = [c[0] for c in categorias]
+            produtos_loja, recado = produto_lojaController.listarProdutoLoja()
+      
         categorias_unicas,recado = produtoController.listar_categorias()
         
         return render_template('menu/produtos.html', mensagem=mensagem,produtos = produtos, produtos_loja = produtos_loja,typeUser = session['typeUser'],categorias = categorias_unicas,pesquisa = pesquisa,categoria = categoria)
