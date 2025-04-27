@@ -76,14 +76,51 @@ create table produto_loja(
 id_produto_loja int auto_increment primary key,
 id_produto int,
 id_loja int,
-foreign key(id_produto) references produtos(id_produto),
-foreign key(id_loja) references lojas(id_loja)
+foreign key(id_produto) references produtos(id_produto)  ON DELETE CASCADE,
+foreign key(id_loja) references lojas(id_loja)  ON DELETE CASCADE
 );
-select * from enderecos;
+SELECT * FROM usuarios;
+SELECT * FROM enderecos;
+delete from lojas where id_loja =12;
+update usuarios set typeUser = null where id_usuario = 14;
 
 
-insert into usuarios (email_usuario,pass_usuario,verificado,typeUser) values("adminColiseu@admin.com","$2b$10$BnWF6mS/AuZp//2B67uMiO8XlbrIZE1pSch7zh04lMptxQdbrXxNq","20250303",1);
-update usuarios set typeUser = 1 where id_usuario = 1;
+SELECT 
+    pl.*, 
+    l.*, 
+    p.*, 
+    e.*, 
+    ROUND(
+        6371 * ACOS(
+            COS(RADIANS(-23.63500222061912)) * COS(RADIANS(e.latitude)) *
+            COS(RADIANS(e.longitude) - RADIANS(-46.80486888673414)) +
+            SIN(RADIANS(-23.63500222061912)) * SIN(RADIANS(e.latitude))
+        ),
+        2
+    ) AS distancia  FROM 
+    produto_loja pl
+JOIN 
+    lojas l ON pl.id_loja = l.id_loja
+JOIN 
+    produtos p ON pl.id_produto = p.id_produto
+JOIN 
+    enderecos e ON e.id_usuario = l.id_usuario
+WHERE
+    (
+        -- Filtro por palavras no nome do produto
+        p.nome_produto LIKE '%troca%' OR
+        p.nome_produto LIKE '%Reparação%' OR
+        p.nome_produto LIKE '%rodas%' -- ...repita conforme o número de palavras
+    )
+ORDER BY 
+    distancia
+    
+   
+LIMIT 40;
+
+
+insert into usuarios (email_usuario,pass_usuario,typeUser) values("adminColiseu@admin.com","$2b$10$BnWF6mS/AuZp//2B67uMiO8XlbrIZE1pSch7zh04lMptxQdbrXxNq",1);
+update usuarios set typeUser = 1,verificado = "20250303" where id_usuario = 1;
 insert into administradores (nome, id_usuario) values ("Pedro", 1);
 
 
