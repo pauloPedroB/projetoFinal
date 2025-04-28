@@ -1,10 +1,14 @@
 import requests
+from flask import session
 from models.Produto import Produto
 
 API_URL = "http://localhost:3001/produtos/"
 
 def buscar(dados_usuario):
-    response = requests.post(API_URL +"buscar/", json=dados_usuario)
+    headers = {
+                    "Authorization": f"Bearer {session['token']}"
+                }
+    response = requests.post(API_URL +"buscar/", json=dados_usuario,headers=headers)
     resposta_json = response.json()
     mensagem = resposta_json.get('message')
     if response.status_code != 200:
@@ -25,9 +29,15 @@ def listar(nomes = [],categoria = None):
         "nomes": nomes,
         "categoria": categoria
         }
-    response = requests.post(API_URL +"listar/", json=dados_usuario)
+    headers = {
+                    "Authorization": f"Bearer {session['token']}"
+                }
+    response = requests.post(API_URL +"listar/", json=dados_usuario,headers=headers)
     resposta_json = response.json()
     mensagem = resposta_json.get('message')
+    print(response.status_code)
+
+    print(mensagem)
     if response.status_code != 200:
         return None,mensagem
     produtos = resposta_json.get('produtos')
@@ -49,7 +59,10 @@ def criar(produto:Produto):
         "img": produto.img,
         "categoria": produto.categoria
         }
-    response = requests.post(API_URL +"criar/", json=dados_usuario)
+    headers = {
+                    "Authorization": f"Bearer {session['token']}"
+                }
+    response = requests.post(API_URL +"criar/", json=dados_usuario,headers=headers)
     resposta_json = response.json()
 
     mensagem = resposta_json.get('message')
@@ -66,7 +79,10 @@ def editar(produto:Produto):
         "img": produto.img,
         "categoria": produto.categoria
         }
-    response = requests.post(API_URL +"editar/", json=dados_usuario)
+    headers = {
+                    "Authorization": f"Bearer {session['token']}"
+                }
+    response = requests.post(API_URL +"editar/", json=dados_usuario,headers=headers)
     resposta_json = response.json()
 
     mensagem = resposta_json.get('message')
@@ -80,7 +96,10 @@ def excluir(produto:Produto):
     dados_usuario = {
         "id_produto": produto.id_produto,
         }
-    response = requests.delete(API_URL +"excluir/", json=dados_usuario)
+    headers = {
+                    "Authorization": f"Bearer {session['token']}"
+                }
+    response = requests.delete(API_URL +"excluir/", json=dados_usuario,headers=headers)
     resposta_json = response.json()
 
     mensagem = resposta_json.get('message')
