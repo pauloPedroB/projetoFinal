@@ -85,9 +85,9 @@ def principal():
             if endereco == None:
                 if usuario.typeUser != 1:
                     return redirect(url_for('endereco.cadastro',mensagem = mensagem))
-                return None
-            session["lat"] = endereco.latitude
-            session["long"] = endereco.longitude
+            else:
+                session["lat"] = endereco.latitude
+                session["long"] = endereco.longitude
        
         
         pesquisa = request.args.get('pesquisa',"")

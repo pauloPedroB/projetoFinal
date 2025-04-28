@@ -17,7 +17,8 @@ def buscar()-> Optional[Endereco]:
             lojaController.buscar({"id_usuario": session['user_id']})
         elif session['typeUser'] == 3:
             clienteController.buscar({"id_usuario": session['user_id']})
-
+        elif session['typeUser'] == 1:
+            return None, "Usuário adiministrador"
     headers = {
                     "Authorization": f"Bearer {session['token']}",
                     "token_dados": f"{session['token_dados']}"

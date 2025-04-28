@@ -158,7 +158,7 @@ def listar(nomes = [],categoria = None ):
     resposta_json = response.json()
     mensagem = resposta_json.get('message')
 
-    print(mensagem)
+    print(resposta_json)
     if response.status_code != 200:
         return None,mensagem
     produtos_loja_api = resposta_json.get('produtos_loja')
@@ -177,10 +177,10 @@ def listar(nomes = [],categoria = None ):
         
         
         usuario = Usuario(id_usuario=produto_loja_api["loja"]["usuario"]["id_usuario"],
-                        email_usuario=produto_loja_api["loja"]["usuario"]["email_usuario"],
-                        pass_usuario=produto_loja_api["loja"]["usuario"]["pass_usuario"],
-                        verificado=produto_loja_api["loja"]["usuario"]["verificado"],
-                        typeUser = produto_loja_api["loja"]["usuario"]["typeUser"])
+                        email_usuario=None,
+                        pass_usuario=None,
+                        verificado=None,
+                        typeUser =None)
         
         endereco = Endereco(id = produto_loja_api['endereco']['id'],
                         rua = produto_loja_api['endereco']['rua'],
