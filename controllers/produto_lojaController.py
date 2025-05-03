@@ -181,8 +181,8 @@ def listar(nomes = [],categoria = None ):
                         pass_usuario=None,
                         verificado=None,
                         typeUser =None)
-        
-        endereco = Endereco(id = produto_loja_api['endereco']['id'],
+        if 'token' in session:
+            endereco = Endereco(id = produto_loja_api['endereco']['id'],
                         rua = produto_loja_api['endereco']['rua'],
                         bairro = produto_loja_api['endereco']['bairro'],
                         cidade = produto_loja_api['endereco']['cidade'],
@@ -194,7 +194,7 @@ def listar(nomes = [],categoria = None ):
                         longitude = produto_loja_api['endereco']['longitude'],
                         usuario = usuario
                         )
-        loja = Loja(id_loja=produto_loja_api["loja"]["id_loja"],
+            loja = Loja(id_loja=produto_loja_api["loja"]["id_loja"],
                       cnpj=produto_loja_api["loja"]["cnpj"],
                       nomeFantasia=produto_loja_api["loja"]["nomeFantasia"],
                       razaoSocial = produto_loja_api["loja"]["razaoSocial"],
@@ -203,6 +203,10 @@ def listar(nomes = [],categoria = None ):
                       abertura = produto_loja_api["loja"]["abertura"],
                       usuario = usuario,
                         )
+        else:
+            endereco = None
+            loja = None
+        
         distancia = produto_loja_api['distancia']
         produto_loja = Produto_Loja(
             produto,
